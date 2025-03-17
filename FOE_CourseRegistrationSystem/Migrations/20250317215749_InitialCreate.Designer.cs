@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOE_CourseRegistrationSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250213194412_FixStudentTableName")]
-    partial class FixStudentTableName
+    [Migration("20250317215749_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,29 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Department", b =>
+                {
+                    b.Property<int>("DepartmentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentID"));
+
+                    b.Property<string>("DepartmentName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("StaffID")
+                        .HasColumnType("int");
+
+                    b.HasKey("DepartmentID");
+
+                    b.HasIndex("StaffID");
+
+                    b.ToTable("Department", (string)null);
+                });
+
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Staff", b =>
                 {
                     b.Property<int>("StaffID")
@@ -31,6 +54,9 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffID"));
+
+                    b.Property<int>("DepID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -42,7 +68,8 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
                     b.Property<string>("NIC")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -52,13 +79,14 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("StaffID");
 
-                    b.ToTable("Staffs");
+                    b.HasIndex("DepID");
+
+                    b.ToTable("Staff", (string)null);
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Student", b =>
@@ -72,7 +100,7 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.Property<int>("AcademicYear")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AdviserID")
+                    b.Property<int>("DepartmentID")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -89,7 +117,8 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
                     b.Property<string>("NIC")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
 
                     b.Property<string>("Nationality")
                         .IsRequired()
@@ -107,9 +136,12 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("Photo")
+                    b.Property<string>("Photo")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StaffID")
+                        .HasColumnType("int");
 
                     b.Property<string>("TempAddress")
                         .IsRequired()
@@ -117,18 +149,62 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
                     b.HasKey("StudentID");
 
-                    b.HasIndex("AdviserID");
+                    b.HasIndex("DepartmentID");
 
-                    b.ToTable("Student");
+                    b.HasIndex("StaffID");
+
+                    b.ToTable("Student", (string)null);
+                });
+
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Department", b =>
+                {
+                    b.HasOne("FOE_CourseRegistrationSystem.Models.Staff", "HOD")
+                        .WithMany()
+                        .HasForeignKey("StaffID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("HOD");
+                });
+
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Staff", b =>
+                {
+                    b.HasOne("FOE_CourseRegistrationSystem.Models.Department", "Department")
+                        .WithMany("Staffs")
+                        .HasForeignKey("DepID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Student", b =>
                 {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.Staff", "Adviser")
-                        .WithMany()
-                        .HasForeignKey("AdviserID");
+                    b.HasOne("FOE_CourseRegistrationSystem.Models.Department", "Department")
+                        .WithMany("Students")
+                        .HasForeignKey("DepartmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Adviser");
+                    b.HasOne("FOE_CourseRegistrationSystem.Models.Staff", "Advisor")
+                        .WithMany("AdvisedStudents")
+                        .HasForeignKey("StaffID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Advisor");
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Department", b =>
+                {
+                    b.Navigation("Staffs");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Staff", b =>
+                {
+                    b.Navigation("AdvisedStudents");
                 });
 #pragma warning restore 612, 618
         }

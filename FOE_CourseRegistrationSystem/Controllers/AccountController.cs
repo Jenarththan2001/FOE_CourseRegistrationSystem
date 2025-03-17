@@ -73,30 +73,27 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 if (!string.IsNullOrEmpty(staff.Password) && staff.Password == model.Password)
                 {
                     Console.WriteLine($"✅ Staff Verified");
-                    if (staff.Role == "Adviser")
+
+                    if (staff.Role == StaffRole.Advisor)  // ✅ Compare using Enum
                     {
                         await SignInUser(staff.Email, "Adviser");
                         Console.WriteLine("🔹 Redirecting to AdviserDashboard...");
                         return RedirectToAction("AdviserDashboard", "Dashboard");
                     }
-
-                    else if (staff.Role == "AR")
+                    else if (staff.Role == StaffRole.AR)  // ✅ Compare using Enum
                     {
                         await SignInUser(staff.Email, "AR");
                         Console.WriteLine("🔹 Redirecting to AdminDashboard...");
                         return RedirectToAction("AdminDashboard", "Dashboard");
                     }
-
                 }
+
                 else
                 {
                     Console.WriteLine("❌ Staff Password Verification Failed");
                 }
             }
-            else
-            {
-                Console.WriteLine("❌ Staff Not Found");
-            }
+
 
             Console.WriteLine("❌ Login Failed");
             ModelState.AddModelError("", "Invalid email or password.");

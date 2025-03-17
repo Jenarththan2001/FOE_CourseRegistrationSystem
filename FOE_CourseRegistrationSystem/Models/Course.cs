@@ -12,7 +12,11 @@ namespace FOE_CourseRegistrationSystem.Models
         public string CourseName { get; set; }
 
         public int Credit { get; set; }
+
+        [Required]
         public string Semester { get; set; }
+
+        [Required]
         public string CoreOrElective { get; set; }
 
         [ForeignKey("Department")]

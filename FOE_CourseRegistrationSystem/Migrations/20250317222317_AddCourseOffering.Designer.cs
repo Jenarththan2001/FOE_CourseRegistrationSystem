@@ -4,6 +4,7 @@ using FOE_CourseRegistrationSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOE_CourseRegistrationSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250317222317_AddCourseOffering")]
+    partial class AddCourseOffering
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,67 +132,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.HasIndex("PrerequisiteCode");
 
                     b.ToTable("HasPrerequisites");
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Registration", b =>
-                {
-                    b.Property<int>("RegistrationID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RegistrationID"));
-
-                    b.Property<DateTime?>("ApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Attempt")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OfferingID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RegistrationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Semester")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("RegistrationID");
-
-                    b.HasIndex("OfferingID");
-
-                    b.ToTable("Registrations");
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Result", b =>
-                {
-                    b.Property<int>("OfferingID")
-                        .HasColumnType("int")
-                        .HasColumnOrder(0);
-
-                    b.Property<int>("StudentID")
-                        .HasColumnType("int")
-                        .HasColumnOrder(1);
-
-                    b.Property<double>("EndMarks")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Grade")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("InCourse")
-                        .HasColumnType("float");
-
-                    b.HasKey("OfferingID", "StudentID");
-
-                    b.HasIndex("StudentID");
-
-                    b.ToTable("Results");
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Staff", b =>
@@ -358,36 +300,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Prerequisite");
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Registration", b =>
-                {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.CourseOffering", "CourseOffering")
-                        .WithMany()
-                        .HasForeignKey("OfferingID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CourseOffering");
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Result", b =>
-                {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.CourseOffering", "CourseOffering")
-                        .WithMany()
-                        .HasForeignKey("OfferingID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CourseOffering");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Staff", b =>
