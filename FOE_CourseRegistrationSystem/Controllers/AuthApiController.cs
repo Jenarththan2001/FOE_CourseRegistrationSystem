@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using FOE_CourseRegistrationSystem.Models.ViewModels;
 
+
 namespace FOE_CourseRegistrationSystem.Controllers
 {
     [ApiController]  // ✅ Marks this as an API controller (No Views, only JSON responses)

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34902.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FOE_CourseRegistrationSystem", "FOE_CourseRegistrationSystem\FOE_CourseRegistrationSystem.csproj", "{8760CDE3-3BCC-435E-86FB-C57841C5A3DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FOE_CourseRegistrationSystem", "FOE_CourseRegistrationSystem\FOE_CourseRegistrationSystem.csproj", "{8760CDE3-3BCC-435E-86FB-C57841C5A3DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FOE_CourseRegistrationSystem.Tests", "FOE_CourseRegistrationSystem.Tests\FOE_CourseRegistrationSystem.Tests.csproj", "{B852D1C9-421B-449D-A6D0-0CBEDD68FD56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{8760CDE3-3BCC-435E-86FB-C57841C5A3DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8760CDE3-3BCC-435E-86FB-C57841C5A3DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8760CDE3-3BCC-435E-86FB-C57841C5A3DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B852D1C9-421B-449D-A6D0-0CBEDD68FD56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B852D1C9-421B-449D-A6D0-0CBEDD68FD56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B852D1C9-421B-449D-A6D0-0CBEDD68FD56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B852D1C9-421B-449D-A6D0-0CBEDD68FD56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
