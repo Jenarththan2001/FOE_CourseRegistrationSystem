@@ -13,6 +13,10 @@ namespace FOE_CourseRegistrationSystem.Models
         public int OfferingID { get; set; }
         public CourseOffering CourseOffering { get; set; }
 
+        [ForeignKey("Student")]
+        public int StudentID { get; set; }  // ✅ Added missing StudentID foreign key
+        public Student Student { get; set; }
+
         public string Semester { get; set; }
         public int Attempt { get; set; }
         public DateTime RegistrationDate { get; set; }

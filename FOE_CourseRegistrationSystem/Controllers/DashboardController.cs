@@ -8,10 +8,13 @@ namespace FOE_CourseRegistrationSystem.Controllers
         [Authorize(Roles = "Student")]
         public IActionResult StudentDashboard() => View();
 
-        [Authorize(Roles = "Adviser")]
+        [Authorize(Roles = "Advisor")]
         public IActionResult AdviserDashboard() => View();
 
         [Authorize(Roles = "AR")]
         public IActionResult AdminDashboard() => View();
+
+        [Authorize(Roles = "Coordinator")]
+        public IActionResult CoordinatorDashboard() => View();
     }
 }

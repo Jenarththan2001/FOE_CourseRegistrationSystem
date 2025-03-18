@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -39,75 +42,85 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return View(model);
             }
 
-            var student = await _context.Students
-                .Where(s => s.Email == model.Email && s.Password != null)  // ✅ Prevent NULL Errors
-                .FirstOrDefaultAsync();
-
-            var staff = await _context.Staffs
-                .Where(s => s.Email == model.Email && s.Password != null)  // ✅ Prevent NULL Errors
-                .FirstOrDefaultAsync();
-
-            if (student != null)
+            try
             {
-                Console.WriteLine($"✅ Found Student: {student.Email}");
+                // Using raw SQL query to avoid EF Core materialization issues with nulls
+                var studentQuery = $"SELECT StudentID, Email, Password FROM Student WHERE Email = '{model.Email}'";
+                var staffQuery = $"SELECT StaffID, Email, Password, Role FROM Staff WHERE Email = '{model.Email}'";
 
-                if (!string.IsNullOrEmpty(student.Password) && student.Password == model.Password)
+                using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    await SignInUser(student.Email, "Student");
-                    return RedirectToAction("StudentDashboard", "Dashboard");
-                }
-                else
-                {
-                    Console.WriteLine("❌ Student Password Verification Failed");
-                }
-            }
-            else
-            {
-                Console.WriteLine("❌ Student Not Found");
-            }
+                    command.CommandText = studentQuery;
+                    await _context.Database.OpenConnectionAsync();
 
-            if (staff != null)
-            {
-                Console.WriteLine($"✅ Found Staff: {staff.Email}");
-
-                if (!string.IsNullOrEmpty(staff.Password) && staff.Password == model.Password)
-                {
-                    Console.WriteLine($"✅ Staff Verified");
-
-                    if (staff.Role == StaffRole.Advisor)  // ✅ Compare using Enum
+                    using (var result = await command.ExecuteReaderAsync())
                     {
-                        await SignInUser(staff.Email, "Adviser");
-                        Console.WriteLine("🔹 Redirecting to AdviserDashboard...");
-                        return RedirectToAction("AdviserDashboard", "Dashboard");
-                    }
-                    else if (staff.Role == StaffRole.AR)  // ✅ Compare using Enum
-                    {
-                        await SignInUser(staff.Email, "AR");
-                        Console.WriteLine("🔹 Redirecting to AdminDashboard...");
-                        return RedirectToAction("AdminDashboard", "Dashboard");
+                        if (await result.ReadAsync())
+                        {
+                            var studentId = result.GetInt32(0);
+                            var email = result.IsDBNull(1) ? null : result.GetString(1);
+                            var password = result.IsDBNull(2) ? null : result.GetString(2);
+
+                            if (!string.IsNullOrEmpty(password) && password == model.Password)
+                            {
+                                await SignInUser(email, "Student", studentId);
+                                return RedirectToAction("StudentDashboard", "Dashboard");
+                            }
+                        }
                     }
                 }
 
-                else
+                using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    Console.WriteLine("❌ Staff Password Verification Failed");
+                    command.CommandText = staffQuery;
+                    if (_context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
+                        await _context.Database.OpenConnectionAsync();
+
+                    using (var result = await command.ExecuteReaderAsync())
+                    {
+                        if (await result.ReadAsync())
+                        {
+                            var staffId = result.GetInt32(0);
+                            var email = result.IsDBNull(1) ? null : result.GetString(1);
+                            var password = result.IsDBNull(2) ? null : result.GetString(2);
+                            var roleValue = result.IsDBNull(3) ? 0 : result.GetInt32(3);
+                            var role = (StaffRole)roleValue;
+
+                            if (!string.IsNullOrEmpty(password) && password == model.Password)
+                            {
+                                string roleName = role.ToString();
+                                await SignInUser(email, roleName, staffId);
+
+                                if (role == StaffRole.Advisor)
+                                    return RedirectToAction("AdviserDashboard", "Dashboard");
+                                else if (role == StaffRole.AR)
+                                    return RedirectToAction("AdminDashboard", "Dashboard");
+                                else if (role == StaffRole.Coordinator)
+                                    return RedirectToAction("CoordinatorDashboard", "Dashboard");
+                            }
+                        }
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception during login: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred during login. Please try again.");
+                return View(model);
+            }
 
             Console.WriteLine("❌ Login Failed");
             ModelState.AddModelError("", "Invalid email or password.");
             return View(model);
         }
 
-
-
-        private async Task SignInUser(string email, string role)
+        private async Task SignInUser(string email, string role, int userId)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, email),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Name, email ?? ""),
+                new Claim(ClaimTypes.Role, role),
+                new Claim("UserId", userId.ToString())
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

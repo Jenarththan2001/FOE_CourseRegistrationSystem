@@ -95,12 +95,17 @@ namespace FOE_CourseRegistrationSystem.Data
                 .HasForeignKey(co => co.StaffID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ Registration - CourseOffering Relationship
+            modelBuilder.Entity<Registration>()
+                .HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentID)
+                .OnDelete(DeleteBehavior.NoAction);  // Change CASCADE to NO ACTION
+
             modelBuilder.Entity<Registration>()
                 .HasOne(r => r.CourseOffering)
                 .WithMany()
                 .HasForeignKey(r => r.OfferingID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);  // Avoid multiple cascade paths
 
             // ✅ Result - CourseOffering & Student Relationship (Composite Key)
             // ✅ Result - CourseOffering & Student Relationship (Composite Key)
