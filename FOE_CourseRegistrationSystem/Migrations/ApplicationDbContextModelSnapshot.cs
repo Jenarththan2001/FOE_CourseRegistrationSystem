@@ -22,6 +22,44 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CourseOffering", b =>
+                {
+                    b.Property<int>("OfferingID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OfferingID"));
+
+                    b.Property<string>("AcademicID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CourseCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StaffID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("OfferingID");
+
+                    b.HasIndex("CourseCode");
+
+                    b.HasIndex("StaffID");
+
+                    b.ToTable("CourseOfferings");
+                });
+
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Course", b =>
                 {
                     b.Property<string>("CourseCode")
@@ -51,44 +89,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.HasIndex("DepID");
 
                     b.ToTable("Course", (string)null);
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.CourseOffering", b =>
-                {
-                    b.Property<int>("OfferingID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OfferingID"));
-
-                    b.Property<string>("AcademicID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CourseCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Semester")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StaffID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("OfferingID");
-
-                    b.HasIndex("CourseCode");
-
-                    b.HasIndex("StaffID");
-
-                    b.ToTable("CourseOfferings");
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Department", b =>
@@ -247,8 +247,10 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentID"));
 
-                    b.Property<int>("AcademicYear")
-                        .HasColumnType("int");
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
 
                     b.Property<int>("DepartmentID")
                         .HasColumnType("int");
@@ -306,18 +308,7 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.ToTable("Student", (string)null);
                 });
 
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Course", b =>
-                {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.Department", "Department")
-                        .WithMany("Courses")
-                        .HasForeignKey("DepID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.CourseOffering", b =>
+            modelBuilder.Entity("CourseOffering", b =>
                 {
                     b.HasOne("FOE_CourseRegistrationSystem.Models.Course", "Course")
                         .WithMany()
@@ -328,12 +319,22 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.HasOne("FOE_CourseRegistrationSystem.Models.Staff", "Coordinator")
                         .WithMany()
                         .HasForeignKey("StaffID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Coordinator");
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Course", b =>
+                {
+                    b.HasOne("FOE_CourseRegistrationSystem.Models.Department", "Department")
+                        .WithMany("Courses")
+                        .HasForeignKey("DepID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Department", b =>
@@ -367,7 +368,7 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Registration", b =>
                 {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.CourseOffering", "CourseOffering")
+                    b.HasOne("CourseOffering", "CourseOffering")
                         .WithMany()
                         .HasForeignKey("OfferingID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -386,7 +387,7 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.Result", b =>
                 {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.CourseOffering", "CourseOffering")
+                    b.HasOne("CourseOffering", "CourseOffering")
                         .WithMany()
                         .HasForeignKey("OfferingID")
                         .OnDelete(DeleteBehavior.Cascade)

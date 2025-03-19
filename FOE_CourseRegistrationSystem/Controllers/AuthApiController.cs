@@ -29,86 +29,68 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             try
             {
-                // Using raw SQL query to avoid EF Core materialization issues with nulls
-                var studentQuery = $"SELECT StudentID, Email, Password, FullName, AcademicYear, DepartmentID, StaffID FROM Student WHERE Email = '{model.Email}'";
-                var staffQuery = $"SELECT StaffID, Email, Password, FullName, DepID, Role FROM Staff WHERE Email = '{model.Email}'";
-
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = studentQuery;
-                    await _context.Database.OpenConnectionAsync();
-
-                    using (var result = await command.ExecuteReaderAsync())
+                // 🔹 Fetch student details while handling NULL values
+                var student = await _context.Students
+                    .Where(s => s.Email == model.Email && s.Password == model.Password)
+                    .Select(s => new
                     {
-                        if (await result.ReadAsync())
-                        {
-                            var studentId = result.GetInt32(0);
-                            var email = result.IsDBNull(1) ? null : result.GetString(1);
-                            var password = result.IsDBNull(2) ? null : result.GetString(2);
-                            var fullName = result.IsDBNull(3) ? "" : result.GetString(3);
-                            var academicYear = result.IsDBNull(4) ? 0 : result.GetInt32(4);
-                            var departmentId = result.IsDBNull(5) ? 0 : result.GetInt32(5);
-                            var advisorId = result.IsDBNull(6) ? (int?)null : result.GetInt32(6);
+                        s.StudentID,
+                        s.FullName,
+                        s.AcademicYear,
+                        s.DepartmentID,
+                        s.StaffID,
+                        Email = s.Email ?? "",  // Handle NULL values
+                        NIC = s.NIC ?? "",      // Handle NULL values
+                        Nationality = s.Nationality ?? "",
+                        Photo = s.Photo ?? "",
+                        TempAddress = s.TempAddress ?? "",
+                        PermanentAddress = s.PermanentAddress ?? "",
+                        Gender = s.Gender ?? "",
+                        PhoneNo = s.PhoneNo ?? ""
+                    })
+                    .FirstOrDefaultAsync();
 
-                            if (!string.IsNullOrEmpty(password) && password == model.Password)
-                            {
-                                return Ok(new
-                                {
-                                    message = "Login successful",
-                                    role = "Student",
-                                    userId = studentId,
-                                    fullName = fullName,
-                                    academicYear = academicYear,
-                                    departmentId = departmentId,
-                                    advisorId = advisorId
-                                });
-                            }
-                            else
-                            {
-                                return Unauthorized(new { message = "Invalid student credentials" });
-                            }
-                        }
-                    }
+                if (student != null)
+                {
+                    return Ok(new
+                    {
+                        message = "Login successful",
+                        role = "Student",
+                        userId = student.StudentID,
+                        fullName = student.FullName,
+                        academicYear = student.AcademicYear,
+                        departmentId = student.DepartmentID,
+                        advisorId = student.StaffID
+                    });
                 }
 
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = staffQuery;
-                    if (_context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
-                        await _context.Database.OpenConnectionAsync();
-
-                    using (var result = await command.ExecuteReaderAsync())
+                // 🔹 Fetch staff details while handling NULL values
+                var staff = await _context.Staffs
+                    .Where(st => st.Email == model.Email && st.Password == model.Password)
+                    .Select(st => new
                     {
-                        if (await result.ReadAsync())
-                        {
-                            var staffId = result.GetInt32(0);
-                            var email = result.IsDBNull(1) ? null : result.GetString(1);
-                            var password = result.IsDBNull(2) ? null : result.GetString(2);
-                            var fullName = result.IsDBNull(3) ? "" : result.GetString(3);
-                            var depId = result.IsDBNull(4) ? 0 : result.GetInt32(4);
-                            var roleValue = result.IsDBNull(5) ? 0 : result.GetInt32(5);
-                            var role = (StaffRole)roleValue;
+                        st.StaffID,
+                        st.FullName,
+                        st.DepID,
+                        Role = st.Role.ToString(),
+                        Email = st.Email ?? "",  // Handle NULL values
+                        PhoneNo = st.PhoneNo ?? "" // Handle NULL values
+                    })
+                    .FirstOrDefaultAsync();
 
-                            if (!string.IsNullOrEmpty(password) && password == model.Password)
-                            {
-                                return Ok(new
-                                {
-                                    message = "Login successful",
-                                    role = role.ToString(),
-                                    userId = staffId,
-                                    fullName = fullName,
-                                    departmentId = depId
-                                });
-                            }
-                            else
-                            {
-                                return Unauthorized(new { message = "Invalid staff credentials" });
-                            }
-                        }
-                    }
+                if (staff != null)
+                {
+                    return Ok(new
+                    {
+                        message = "Login successful",
+                        role = staff.Role,
+                        userId = staff.StaffID,
+                        fullName = staff.FullName,
+                        departmentId = staff.DepID
+                    });
                 }
 
-                return Unauthorized(new { message = "User not found" });
+                return Unauthorized(new { message = "Invalid credentials" });
             }
             catch (Exception ex)
             {

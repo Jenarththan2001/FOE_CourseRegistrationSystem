@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -17,14 +16,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly PasswordHasher<Student> _studentPasswordHasher;
-        private readonly PasswordHasher<Staff> _staffPasswordHasher;
 
         public AccountController(ApplicationDbContext context)
         {
             _context = context;
-            _studentPasswordHasher = new PasswordHasher<Student>();
-            _staffPasswordHasher = new PasswordHasher<Staff>();
         }
 
         [HttpGet]
@@ -34,7 +29,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             Console.WriteLine($"🔹 Received Email: {model.Email}");
-            Console.WriteLine($"🔹 Received Password: {model.Password}");
 
             if (!ModelState.IsValid)
             {
@@ -44,62 +38,32 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             try
             {
-                // Using raw SQL query to avoid EF Core materialization issues with nulls
-                var studentQuery = $"SELECT StudentID, Email, Password FROM Student WHERE Email = '{model.Email}'";
-                var staffQuery = $"SELECT StaffID, Email, Password, Role FROM Staff WHERE Email = '{model.Email}'";
+                // 🔹 Validate student login
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Email == model.Email && s.Password == model.Password);
 
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
+                if (student != null)
                 {
-                    command.CommandText = studentQuery;
-                    await _context.Database.OpenConnectionAsync();
-
-                    using (var result = await command.ExecuteReaderAsync())
-                    {
-                        if (await result.ReadAsync())
-                        {
-                            var studentId = result.GetInt32(0);
-                            var email = result.IsDBNull(1) ? null : result.GetString(1);
-                            var password = result.IsDBNull(2) ? null : result.GetString(2);
-
-                            if (!string.IsNullOrEmpty(password) && password == model.Password)
-                            {
-                                await SignInUser(email, "Student", studentId);
-                                return RedirectToAction("StudentDashboard", "Dashboard");
-                            }
-                        }
-                    }
+                    await SignInUser(student.Email, "Student", student.StudentID);
+                    return RedirectToAction("StudentDashboard", "Dashboard");
                 }
 
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
+                // 🔹 Validate staff login
+                var staff = await _context.Staffs
+                    .FirstOrDefaultAsync(st => st.Email == model.Email && st.Password == model.Password);
+
+                if (staff != null)
                 {
-                    command.CommandText = staffQuery;
-                    if (_context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
-                        await _context.Database.OpenConnectionAsync();
+                    string roleName = staff.Role.ToString();
+                    await SignInUser(staff.Email, roleName, staff.StaffID);
 
-                    using (var result = await command.ExecuteReaderAsync())
+                    return roleName switch
                     {
-                        if (await result.ReadAsync())
-                        {
-                            var staffId = result.GetInt32(0);
-                            var email = result.IsDBNull(1) ? null : result.GetString(1);
-                            var password = result.IsDBNull(2) ? null : result.GetString(2);
-                            var roleValue = result.IsDBNull(3) ? 0 : result.GetInt32(3);
-                            var role = (StaffRole)roleValue;
-
-                            if (!string.IsNullOrEmpty(password) && password == model.Password)
-                            {
-                                string roleName = role.ToString();
-                                await SignInUser(email, roleName, staffId);
-
-                                if (role == StaffRole.Advisor)
-                                    return RedirectToAction("AdviserDashboard", "Dashboard");
-                                else if (role == StaffRole.AR)
-                                    return RedirectToAction("AdminDashboard", "Dashboard");
-                                else if (role == StaffRole.Coordinator)
-                                    return RedirectToAction("CoordinatorDashboard", "Dashboard");
-                            }
-                        }
-                    }
+                        "Advisor" => RedirectToAction("AdviserDashboard", "Dashboard"),
+                        "AR" => RedirectToAction("AdminDashboard", "Dashboard"),
+                        "Coordinator" => RedirectToAction("CoordinatorDashboard", "Dashboard"),
+                        _ => RedirectToAction("Login", "Account"),
+                    };
                 }
             }
             catch (Exception ex)
