@@ -45,7 +45,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 if (student != null)
                 {
                     await SignInUser(student.Email, "Student", student.StudentID);
-                    return RedirectToAction("StudentDashboard", "Dashboard");
+                    return RedirectToAction("Dashboard", "Student");
                 }
 
                 // 🔹 Validate staff login
@@ -60,7 +60,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                     return roleName switch
                     {
                         "Advisor" => RedirectToAction("AdviserDashboard", "Dashboard"),
-                        "AR" => RedirectToAction("AdminDashboard", "Dashboard"),
+                        "AR" => RedirectToAction("AdminDashboard", "Admin"),
                         "Coordinator" => RedirectToAction("CoordinatorDashboard", "Dashboard"),
                         _ => RedirectToAction("Login", "Account"),
                     };

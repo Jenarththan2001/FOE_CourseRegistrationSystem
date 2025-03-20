@@ -4,6 +4,7 @@ using FOE_CourseRegistrationSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOE_CourseRegistrationSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250320063436_AddRegistrationSession")]
+    partial class AddRegistrationSession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -308,47 +311,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.ToTable("Student", (string)null);
                 });
 
-            modelBuilder.Entity("PendingRegistration", b =>
-                {
-                    b.Property<int>("PendingID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PendingID"));
-
-                    b.Property<string>("AdminRemarks")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CourseCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("RegistrationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SessionID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StudentID")
-                        .HasColumnType("int");
-
-                    b.HasKey("PendingID");
-
-                    b.HasIndex("StudentID");
-
-                    b.HasIndex("SessionID", "CourseCode");
-
-                    b.ToTable("PendingRegistrations");
-                });
-
             modelBuilder.Entity("RegistrationSession", b =>
                 {
                     b.Property<int>("SessionID")
@@ -390,12 +352,13 @@ namespace FOE_CourseRegistrationSystem.Migrations
             modelBuilder.Entity("RegistrationSessionCourse", b =>
                 {
                     b.Property<int>("SessionID")
-                        .HasColumnType("int")
-                        .HasColumnOrder(0);
+                        .HasColumnType("int");
 
                     b.Property<string>("CourseCode")
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnOrder(1);
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ID")
+                        .HasColumnType("int");
 
                     b.HasKey("SessionID", "CourseCode");
 
@@ -529,25 +492,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("PendingRegistration", b =>
-                {
-                    b.HasOne("FOE_CourseRegistrationSystem.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("RegistrationSessionCourse", "RegistrationSessionCourse")
-                        .WithMany("PendingRegistrations")
-                        .HasForeignKey("SessionID", "CourseCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RegistrationSessionCourse");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("RegistrationSession", b =>
                 {
                     b.HasOne("FOE_CourseRegistrationSystem.Models.Department", "Department")
@@ -594,11 +538,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
             modelBuilder.Entity("RegistrationSession", b =>
                 {
                     b.Navigation("RegistrationSessionCourses");
-                });
-
-            modelBuilder.Entity("RegistrationSessionCourse", b =>
-                {
-                    b.Navigation("PendingRegistrations");
                 });
 #pragma warning restore 612, 618
         }

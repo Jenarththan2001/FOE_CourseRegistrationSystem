@@ -1,0 +1,149 @@
+﻿@{
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
+    var registeredCourses = ViewData["RegisteredCourses"] as List<FOE_CourseRegistrationSystem.Models.Registration>;
+    var coursePrerequisites = ViewData["CoursePrerequisites"] as Dictionary<string, string>;
+}
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Courses</title>
+    <link rel="stylesheet" href="~/css/RegisteredCourse_style.css">
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+            
+
+            <div class="bottom-links">
+                <li class="bottom-items">
+                    <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+                </li>
+            </div>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Registered Courses</h1>
+                <div class="user-info">
+                    <div class="profile-pic">
+                        <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                    </div>
+                    <span id="student-id">| @student.StudentID</span>
+                    <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <select id="semesterFilter">
+                    <option value="">Filter by Semester</option>
+                    @foreach (var course in registeredCourses.Select(c => c.CourseOffering.Semester).Distinct())
+                    {
+                            <option value="@course">Semester @course</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Course Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                            <th>Coordinator</th>
+                            <th>Pre-requisites</th>
+                            <th>Approval Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courseTableBody">
+                        @foreach (var registration in registeredCourses)
+                        {
+                            string courseCode = registration.CourseOffering.Course.CourseCode;
+                            string prerequisiteText = coursePrerequisites.ContainsKey(courseCode) ? coursePrerequisites[courseCode] : "None";
+
+                                <tr data-semester="@registration.CourseOffering.Semester">
+                                    <td>@courseCode</td>
+                                    <td>@registration.CourseOffering.Course.CourseName</td>
+                                    <td>@registration.CourseOffering.Course.Credit</td>
+                                    <td>@(registration.CourseOffering.Coordinator?.FullName ?? "N/A")</td>
+                                    <td>@prerequisiteText</td>
+                                    <td class="@(registration.ApprovalDate.HasValue ? "status-approved" : "status-pending")">
+                                        <i class="fas @(registration.ApprovalDate.HasValue ? "fa-check-circle" : "fa-hourglass-half")"></i>
+                                    </td>
+                                </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const semesterFilter = document.getElementById("semesterFilter");
+            const courseTableBody = document.getElementById("courseTableBody");
+
+            semesterFilter.addEventListener("change", filterCourses);
+
+            function filterCourses() {
+                const selectedSemester = semesterFilter.value;
+                const rows = courseTableBody.getElementsByTagName("tr");
+
+                for (let row of rows) {
+                    const courseSemester = row.getAttribute("data-semester");
+
+                    if (selectedSemester === "" || courseSemester === selectedSemester) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                }
+            }
+        });
+
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body>
+
+</html>
