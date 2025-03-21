@@ -202,7 +202,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
         public async Task<IActionResult> ResultPage()
         {
             string studentEmail = User.Identity.Name;
-
+   
             var student = await _context.Students
                 .Include(s => s.Department)
                 .Include(s => s.Advisor)
@@ -229,7 +229,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
         {
             return View("~/Views/Dashboard/Student/CourseRegistration.cshtml");
         }
-
         public async Task<IActionResult> RegisteredCourse()
         {
             string studentEmail = User.Identity.Name;
@@ -244,6 +243,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return NotFound("Student not found.");
             }
 
+            // ✅ Fetch Registered Courses from Registration Table
             var registeredCourses = await _context.Registrations
                 .Where(r => r.StudentID == student.StudentID)
                 .Include(r => r.CourseOffering)
@@ -251,16 +251,27 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 .Include(r => r.CourseOffering.Coordinator)
                 .ToListAsync();
 
-            // ✅ Fetch Prerequisites Separately
+            // ✅ Fetch Pending & Rejected Registrations with Course Details
+            var pendingRegistrations = await _context.PendingRegistrations
+                .Where(r => r.StudentID == student.StudentID && (r.Status == "Pending" || r.Status == "Rejected"))
+                .Include(r => r.RegistrationSessionCourse)
+                    .ThenInclude(rsc => rsc.Course) // ✅ Fetch Course details via RegistrationSessionCourse
+                .ToListAsync();
+
+            // ✅ Fetch Course Prerequisites from HasPrerequisites
             var coursePrerequisites = await _context.HasPrerequisites
-                .ToDictionaryAsync(p => p.CourseCode, p => p.PrerequisiteCode);
+                .GroupBy(p => p.CourseCode)
+                .ToDictionaryAsync(g => g.Key, g => g.Select(p => p.PrerequisiteCode).ToList());
 
             ViewData["Student"] = student;
             ViewData["RegisteredCourses"] = registeredCourses;
+            ViewData["PendingRegistrations"] = pendingRegistrations;
             ViewData["CoursePrerequisites"] = coursePrerequisites;
 
             return View("~/Views/Dashboard/Student/RegisteredCourse.cshtml");
         }
+
+
 
 
         public async Task<IActionResult> RegisterNewCourse()
@@ -299,24 +310,29 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             Console.WriteLine($"✅ Student {student.StudentID} is registering for {selectedCourses.Count} courses.");
 
-            // Fetch valid courses that exist in the RegistrationSessionCourses table
+            // ✅ Fetch only the session for the student's academic year
             var validCourses = await _context.RegistrationSessionCourses
-                .Where(rsc => selectedCourses.Contains(rsc.CourseCode))
+                .Where(rsc => selectedCourses.Contains(rsc.CourseCode) &&
+                              _context.RegistrationSessions
+                                  .Where(rs => rs.AcademicYear == student.AcademicYear && rs.IsOpen)
+                                  .Select(rs => rs.SessionID)
+                                  .Contains(rsc.SessionID))
                 .ToListAsync();
+
 
             if (!validCourses.Any())
             {
                 return BadRequest(new { message = "Selected courses are not part of the current session." });
             }
 
-            // ✅ Check for duplicate registrations
+            // ✅ Check for duplicate registrations (Same Student, Same Course, Same Session)
             var existingRegistrations = await _context.PendingRegistrations
                 .Where(pr => pr.StudentID == student.StudentID && selectedCourses.Contains(pr.CourseCode))
-                .Select(pr => pr.CourseCode)
+                .Select(pr => new { pr.CourseCode, pr.SessionID })
                 .ToListAsync();
 
             var newCourses = validCourses
-                .Where(vc => !existingRegistrations.Contains(vc.CourseCode))
+                .Where(vc => !existingRegistrations.Any(er => er.CourseCode == vc.CourseCode && er.SessionID == vc.SessionID))
                 .ToList();
 
             if (!newCourses.Any())
@@ -324,50 +340,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return BadRequest(new { message = "All selected courses have already been submitted for registration." });
             }
 
-            // ✅ Step 1: Fetch all prerequisites for selected courses
-            var prerequisites = await _context.HasPrerequisites
-                .Where(hp => selectedCourses.Contains(hp.CourseCode))
-                .ToListAsync();
+            // ✅ Fetch available courses & their attempts
+            var availableCourses = await GetAvailableCoursesList(student.StudentID);
 
-            // ✅ Step 2: Fetch student's results for prerequisite courses
-            var studentResults = await _context.Results
-                .Where(r => r.StudentID == student.StudentID)
-                .Include(r => r.CourseOffering)
-                .ToListAsync();
-
-            // ✅ Step 3: Validate Prerequisites
-            List<string> failedCourses = new List<string>();
-
-            foreach (var prereq in prerequisites)
-            {
-                var result = studentResults.FirstOrDefault(r => r.CourseOffering != null && r.CourseOffering.CourseCode == prereq.PrerequisiteCode);
-
-                if (result != null)
-                {
-                    double averageMarks = (result.InCourse + result.EndMarks) / 2.0;
-                    Console.WriteLine($"➡ Checking prerequisite {prereq.PrerequisiteCode} for {prereq.CourseCode}: Marks = {averageMarks}");
-
-                    if (averageMarks < 50)
-                    {
-                        failedCourses.Add(prereq.CourseCode);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"⚠ Prerequisite {prereq.PrerequisiteCode} has no results released. Allowing registration.");
-                }
-            }
-
-            if (failedCourses.Any())
-            {
-                return BadRequest(new
-                {
-                    message = "You have failed prerequisite courses required for registration.",
-                    failedCourses
-                });
-            }
-
-            // ✅ Step 4: Insert into PendingRegistration table
+            // ✅ Insert into `PendingRegistration` table
             var pendingRegistrations = newCourses.Select(course => new PendingRegistration
             {
                 SessionID = course.SessionID,
@@ -375,7 +351,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 StudentID = student.StudentID,
                 Status = "Pending",
                 RegistrationDate = DateTime.UtcNow,
-                AdminRemarks = "" // ✅ Set empty string if NULL is not allowed
+                Attempt = availableCourses.FirstOrDefault(ac => ac.CourseCode == course.CourseCode)?.Attempt ?? 1, // ✅ Fetch attempt from GetAvailableCoursesList
+                IsApprovedByAdvisor = "No"
             }).ToList();
 
             _context.PendingRegistrations.AddRange(pendingRegistrations);
@@ -386,6 +363,84 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return Ok(new { message = "Course registration submitted successfully!" });
         }
 
+
+
+        private async Task<List<AvailableCourse>> GetAvailableCoursesList(int studentID)
+        {
+            // Fetch student's past results with course codes and average marks
+            var pastResults = await _context.Results
+                .Where(r => r.StudentID == studentID)
+                .Include(r => r.CourseOffering)
+                .Select(r => new
+                {
+                    CourseCode = r.CourseOffering.CourseCode,
+                    Average = (r.InCourse + r.EndMarks) / 2.0
+                })
+                .ToListAsync();
+
+            // Courses that student has passed already
+            var passedCourses = pastResults
+                .Where(r => r.Average >= 50)
+                .Select(r => r.CourseCode)
+                .Distinct()
+                .ToList();
+
+            // Count the number of attempts for each course
+            var pastAttempts = await _context.Results
+                .Where(r => r.StudentID == studentID)
+                .GroupBy(r => r.CourseOffering.CourseCode)
+                .Select(g => new { CourseCode = g.Key, AttemptCount = g.Count() })
+                .ToDictionaryAsync(x => x.CourseCode, x => x.AttemptCount);
+
+            // Courses already in pending registration
+            var alreadyRegisteredCourses = await _context.PendingRegistrations
+                .Where(pr => pr.StudentID == studentID)
+                .Select(pr => pr.CourseCode)
+                .ToListAsync();
+
+            // Fetch open registration sessions
+            var openSessions = await _context.RegistrationSessions
+                .Where(rs => rs.IsOpen && rs.EndDate >= DateTime.UtcNow)
+                .Include(rs => rs.RegistrationSessionCourses)
+                .ThenInclude(rsc => rsc.Course)
+                .ToListAsync();
+
+            // Fetch available courses with filtering
+            var availableCourses = openSessions
+                .SelectMany(rs => rs.RegistrationSessionCourses
+                    .Where(rsc =>
+                        !alreadyRegisteredCourses.Contains(rsc.Course.CourseCode) &&  // Not in pending
+                        (!passedCourses.Contains(rsc.Course.CourseCode) ||  // If failed, allow reattempt
+                         pastResults.Any(r => r.CourseCode == rsc.Course.CourseCode && r.Average < 50))
+                    )
+                    .Select(rsc => new AvailableCourse
+                    {
+                        CourseCode = rsc.Course.CourseCode,
+                        CourseName = rsc.Course.CourseName,
+                        Credit = rsc.Course.Credit,
+                        Semester = rs.Semester,
+                        ClosingDate = rs.EndDate.ToString("yyyy-MM-dd"),
+                        Coordinator = "Not Assigned",
+                        Attempt = pastAttempts.ContainsKey(rsc.Course.CourseCode)
+                            ? pastAttempts[rsc.Course.CourseCode] + 1  // Increment attempt count
+                            : 1 // First attempt
+                    }))
+                .ToList();
+
+            return availableCourses;
+        }
+
+        // Define a class to store available course data
+        private class AvailableCourse
+        {
+            public string CourseCode { get; set; }
+            public string CourseName { get; set; }
+            public int Credit { get; set; }
+            public string Semester { get; set; }
+            public string ClosingDate { get; set; }
+            public string Coordinator { get; set; }
+            public int Attempt { get; set; }
+        }
 
 
 

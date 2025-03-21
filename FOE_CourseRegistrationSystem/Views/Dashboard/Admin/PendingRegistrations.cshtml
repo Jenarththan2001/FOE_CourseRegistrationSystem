@@ -211,57 +211,63 @@
 </div>
 
 
-            <div class="content-section">
-                <h2>Pending Registrations</h2>
-                <table id="pendingRegistrationsTable">
-                    <thead>
-                        <tr>
-                            <th>Student ID</th>
-                            <th>Student Name</th>
-                            <th>Course Code</th>
-                            <th>Course Name</th>
-                            <th>Semester</th>
-                            <th>Closing Date</th>
-                            <th>Status</th>
-                            <th>Registration Date</th>
-                            <th>Advisor Approval</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+<div class="content-section">
+    <h2>Pending Registrations</h2>
+    <table id="pendingRegistrationsTable">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Semester</th>
+                <th>Closing Date</th>
+                <th>Status</th>
+                <th>Registration Date</th>
+                <th>Attempt</th> <!-- ✅ Added Attempt Column -->
+                <th>Advisor Approval</th> <!-- ✅ Added Advisor Approval Status -->
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
 
         <script>
             let allRegistrations = [];
 
 
-    function fetchPendingRegistrations() {
-        console.log("🔹 Fetching Pending Registrations...");
+function fetchPendingRegistrations() {
+    console.log("🔹 Fetching Pending Registrations...");
 
-        $.ajax({
-            url: '@Url.Action("GetPendingRegistrations", "Admin")',
-            type: 'GET',
-            dataType: 'json',
-            success: function (registrations) {
-                console.log("✅ API Response Received:", registrations);
-                allRegistrations = registrations; // ✅ Store globally for filtering
+    $.ajax({
+        url: '@Url.Action("GetPendingRegistrations", "Admin")',
+        type: 'GET',
+        dataType: 'json',
+        success: function (registrations) {
+            console.log("✅ API Called: GetPendingRegistrations()");
+            console.log("✅ API Response:", registrations);
 
-                // ✅ Populate Course and Semester Filters
-                populateCourseFilter(registrations);
-                populateSemesterFilter(registrations);
+            allRegistrations = registrations; // ✅ Store globally for filtering
 
-                // ✅ Ensure "Pending" is selected & apply filter immediately
-                $("#statusFilter").val("Pending");
-                filterRegistrations();
-            },
-            error: function (xhr, status, error) {
-                console.log("❌ Failed to fetch pending registrations:", error);
-                $("#pendingRegistrationsTable tbody").append("<tr><td colspan='10' style='text-align:center;color:red;'>Failed to fetch data.</td></tr>");
-            }
-        });
-    }
+            // ✅ Populate Course and Semester Filters
+            populateCourseFilter(registrations);
+            populateSemesterFilter(registrations);
+
+            // ✅ Ensure "Pending" is selected & apply filter immediately
+            $("#statusFilter").val("Pending");
+            filterRegistrations();
+        },
+        error: function (xhr, status, error) {
+            console.log("❌ API Fetch Failed:", error);
+            console.log("🔴 Response Text:", xhr.responseText);
+            console.log("🔴 Status Code:", xhr.status);
+        }
+    });
+}
+
+
 
         function populateCourseFilter(registrations) {
         let courseFilter = $("#courseFilter");
@@ -291,45 +297,47 @@
         console.log("✅ Semester Filter Populated:", uniqueSemesters);
     }
 
-            function populateTable(registrations) {
-                let tableBody = $("#pendingRegistrationsTable tbody");
-                tableBody.empty();
+function populateTable(registrations) {
+    let tableBody = $("#pendingRegistrationsTable tbody");
+    tableBody.empty();
 
-                if (!registrations || registrations.length === 0) {
-                    console.log("❌ No pending registrations found.");
-                    tableBody.append("<tr><td colspan='10' style='text-align:center;'>No pending registrations.</td></tr>");
-                    return;
-                }
+    if (!registrations || registrations.length === 0) {
+        console.log("❌ No pending registrations found.");
+        tableBody.append("<tr><td colspan='11' style='text-align:center;'>No pending registrations.</td></tr>");
+        return;
+    }
 
-                registrations.forEach(reg => {
-                    let advisorApproval = reg.approvalDate ? "✅ Approved" : "❌ Not Approved";
-                    let row = `
-                        <tr>
-                            <td>${reg.studentID}</td>
-                            <td>${reg.studentName}</td>
-                            <td>${reg.courseCode}</td>
-                            <td>${reg.courseName}</td>
-                            <td>Semester ${reg.semester}</td>
-                            <td>${new Date(reg.closingDate).toLocaleDateString()}</td>
-                            <td>${reg.status}</td>
-                            <td>${new Date(reg.registrationDate).toLocaleDateString()}</td>
-                            <td>${advisorApproval}</td>
-<td class="action-buttons">
-    <button class="btn-action btn-approve" onclick="updateStatus(${reg.pendingID}, 'Approved')">
-        <i class="fas fa-check-circle"></i> Approve
-    </button>
-    <button class="btn-action btn-reject" onclick="updateStatus(${reg.pendingID}, 'Rejected')">
-        <i class="fas fa-times-circle"></i> Reject
-    </button>
-</td>
+    registrations.forEach(reg => {
+        let advisorApproval = reg.isApprovedByAdvisor === "Yes" ? "✅ Approved" : "❌ Not Approved";
 
-                        </tr>
-                    `;
-                    tableBody.append(row);
-                });
+        let row = `
+            <tr>
+                <td>${reg.studentID}</td>
+                <td>${reg.studentName}</td>
+                <td>${reg.courseCode}</td>
+                <td>${reg.courseName}</td>
+                <td>Semester ${reg.semester}</td>
+                <td>${new Date(reg.closingDate).toLocaleDateString()}</td>
+                <td>${reg.status}</td>
+                <td>${new Date(reg.registrationDate).toLocaleDateString()}</td>
+                <td>${reg.attempt}</td> <!-- ✅ Display Attempt Count -->
+                <td>${advisorApproval}</td> <!-- ✅ Display Advisor Approval Status -->
+                <td class="action-buttons">
+                    <button class="btn-action btn-approve" onclick="updateStatus(${reg.pendingID}, 'Approved')">
+                        <i class="fas fa-check-circle"></i> Approve
+                    </button>
+                    <button class="btn-action btn-reject" onclick="updateStatus(${reg.pendingID}, 'Rejected')">
+                        <i class="fas fa-times-circle"></i> Reject
+                    </button>
+                </td>
+            </tr>
+        `;
+        tableBody.append(row);
+    });
 
-                console.log("✅ Table populated with filtered registrations.");
-            }
+    console.log("✅ Table populated with filtered registrations.");
+}
+            
 
     function filterRegistrations() {
         let selectedStatus = $("#statusFilter").val();
@@ -371,9 +379,10 @@
                 });
             }
 
+
 $(document).ready(function () {
-    console.log("🔹 Page loaded. Fetching pending registrations...");
-    fetchPendingRegistrations();
+    console.log("🔹 Page loaded. Calling fetchPendingRegistrations()...");
+    fetchPendingRegistrations(); // ✅ API is called when the page loads
 
     function updateTime() {
         const currentDate = new Date();
@@ -383,7 +392,7 @@ $(document).ready(function () {
     setInterval(updateTime, 1000);
     updateTime();
 
-    // ✅ Automatically filter "Pending" on load
+        // ✅ Automatically filter "Pending" on load
     $("#statusFilter").val("Pending"); 
     filterRegistrations();
 });

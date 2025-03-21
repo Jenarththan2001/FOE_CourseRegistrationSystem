@@ -74,7 +74,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
 
 
-
+        /*
 
         [HttpPost]
         public async Task<IActionResult> CreateRegistrationSession(
@@ -134,6 +134,63 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             return Json(new { success = true, message = "Registration session created successfully!" });
         }
+        */
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRegistrationSession(
+    [FromForm] string[] academicYears,
+    [FromForm] int semester,
+    [FromForm] int? departmentId,
+    [FromForm] DateTime closingDate,
+    [FromForm] List<string> selectedCourses)
+        {
+            if (academicYears.Length == 0 || semester == 0 ||
+                closingDate == default || closingDate < DateTime.Today ||
+                selectedCourses.Count == 0)
+            {
+                return Json(new { success = false, message = "Please fill all fields and ensure the closing date is not in the past." });
+            }
+
+            bool isGeneralProgram = semester <= 8;
+            departmentId = isGeneralProgram ? null : departmentId; // Set department to NULL for General Program
+
+            foreach (var academicYear in academicYears)
+            {
+                // 🚀 ✅ Instead of preventing duplicates, allow multiple sessions.
+                // This block is now removed:
+                // var existingSession = await _context.RegistrationSessions
+                //     .FirstOrDefaultAsync(rs =>
+                //         rs.AcademicYear == academicYear &&
+                //         rs.Semester == semester.ToString() &&
+                //         rs.DepartmentID == departmentId);
+
+                var registrationSession = new RegistrationSession
+                {
+                    AcademicYear = academicYear,
+                    Semester = semester.ToString(),
+                    DepartmentID = departmentId,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = closingDate,
+                    IsGeneralProgram = isGeneralProgram,
+                    IsOpen = true
+                };
+
+                _context.RegistrationSessions.Add(registrationSession);
+                await _context.SaveChangesAsync();
+
+                var sessionCourses = selectedCourses.Select(courseCode => new RegistrationSessionCourse
+                {
+                    SessionID = registrationSession.SessionID,
+                    CourseCode = courseCode
+                }).ToList();
+
+                _context.RegistrationSessionCourses.AddRange(sessionCourses);
+                await _context.SaveChangesAsync();
+            }
+
+            return Json(new { success = true, message = "Registration session created successfully!" });
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> GetRegistrationSessions()
@@ -252,14 +309,25 @@ namespace FOE_CourseRegistrationSystem.Controllers
                     Semester = pr.RegistrationSessionCourse.RegistrationSession.Semester,
                     ClosingDate = pr.RegistrationSessionCourse.RegistrationSession.EndDate.ToString("yyyy-MM-dd"),
                     Status = pr.Status,
-                    RegistrationDate = pr.RegistrationDate.ToString("yyyy-MM-dd") // ✅ Ensure valid date format
+                    RegistrationDate = pr.RegistrationDate.ToString("yyyy-MM-dd"),
+                    Attempt = pr.Attempt,
+                    IsApprovedByAdvisor = pr.IsApprovedByAdvisor
                 })
                 .ToListAsync();
 
-            Console.WriteLine($"✅ Retrieved {pendingRegistrations.Count} pending registrations.");
+            Console.WriteLine($"✅ API Data Fetched: {pendingRegistrations.Count} pending registrations.");
+
+            // Print each registration for debugging
+            foreach (var reg in pendingRegistrations)
+            {
+                Console.WriteLine($"➡ {reg.PendingID} | {reg.StudentID} | {reg.CourseCode} | {reg.Semester} | Attempt: {reg.Attempt} | Approved: {reg.IsApprovedByAdvisor}");
+            }
 
             return Json(pendingRegistrations);
         }
+
+
+
         [HttpPost]
         public async Task<IActionResult> UpdatePendingStatus([FromBody] UpdatePendingStatusRequest request)
         {
@@ -282,25 +350,24 @@ namespace FOE_CourseRegistrationSystem.Controllers
             {
                 Console.WriteLine($"? Approving Registration for StudentID: {record.StudentID}, Course: {record.CourseCode}");
 
-                // ✅ Check if Course Offering exists
-                // ✅ Check if Course Offering Exists for the Specific Academic Year
+                // ✅ Check if Course Offering Exists for the Student’s Academic Year
                 var courseOffering = await _context.CourseOfferings
                     .FirstOrDefaultAsync(co => co.CourseCode == record.CourseCode
                                                && co.AcademicID == record.RegistrationSessionCourse.RegistrationSession.AcademicYear);
 
+                // ✅ If the course offering for the academic year doesn't exist, create it
                 if (courseOffering == null)
                 {
                     Console.WriteLine($"❌ Course Offering Not Found for CourseCode: {record.CourseCode}, AcademicYear: {record.RegistrationSessionCourse.RegistrationSession.AcademicYear}. Creating new offering...");
 
-                    // ✅ Create a new Course Offering if not found
                     courseOffering = new CourseOffering
                     {
                         CourseCode = record.CourseCode,
-                        AcademicID = record.RegistrationSessionCourse.RegistrationSession.AcademicYear, // ✅ Ensure correct academic year
+                        AcademicID = record.RegistrationSessionCourse.RegistrationSession.AcademicYear, // ✅ New academic year
                         StartDate = record.RegistrationDate,
                         EndDate = record.RegistrationSessionCourse.RegistrationSession.EndDate,
                         Semester = record.RegistrationSessionCourse.RegistrationSession.Semester,
-                        StaffID = null  // ✅ Assign a default or NULL staff
+                        StaffID = null  // ✅ Assign default or NULL staff
                     };
 
                     _context.CourseOfferings.Add(courseOffering);
@@ -308,22 +375,40 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
                     Console.WriteLine($"✅ New Course Offering Created for {record.CourseCode}, AcademicYear: {record.RegistrationSessionCourse.RegistrationSession.AcademicYear}");
                 }
+                else
+                {
+                    Console.WriteLine($"✅ Course Offering Found: {courseOffering.OfferingID} for AcademicYear: {courseOffering.AcademicID}");
+                }
 
+                // ✅ Fetch the Latest Offering ID for the Course (Regardless of Academic Year)
+                var latestOffering = await _context.CourseOfferings
+                    .Where(co => co.CourseCode == record.CourseCode)
+                    .OrderByDescending(co => co.OfferingID) // ✅ Get the latest created offering
+                    .FirstOrDefaultAsync();
+
+                if (latestOffering != null)
+                {
+                    Console.WriteLine($"✅ Using Last Created OfferingID: {latestOffering.OfferingID} for StudentID: {record.StudentID}");
+                    courseOffering = latestOffering; // ✅ Assign the latest offering for registration
+                }
+
+                // ✅ Use the attempt count directly from PendingRegistrations table
+                int currentAttempt = record.Attempt;
 
                 // ✅ Add to Registration Table
                 var newRegistration = new Registration
                 {
-                    OfferingID = courseOffering.OfferingID,  // ✅ Link newly created or existing Course Offering
+                    OfferingID = courseOffering.OfferingID,  // ✅ Always link to the last available offering
                     StudentID = record.StudentID,
                     Semester = record.RegistrationSessionCourse.RegistrationSession.Semester,
-                    Attempt = 1, // ✅ First Attempt (Change logic if retrying)
+                    Attempt = currentAttempt, // ✅ Use Attempt from PendingRegistrations table
                     RegistrationDate = DateTime.UtcNow,
                     ApprovalDate = DateTime.UtcNow,
                     TimeStamp = DateTime.UtcNow
                 };
 
                 _context.Registrations.Add(newRegistration);
-                Console.WriteLine($"✅ Registration Created for StudentID: {record.StudentID}, Course: {record.CourseCode}");
+                Console.WriteLine($"✅ Registration Created for StudentID: {record.StudentID}, Course: {record.CourseCode}, Attempt: {currentAttempt}, OfferingID: {courseOffering.OfferingID}");
             }
 
             // ✅ Update Pending Registration Status
@@ -333,6 +418,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             return Ok(new { message = $"Pending registration {request.Status} successfully!" });
         }
+
 
 
 
