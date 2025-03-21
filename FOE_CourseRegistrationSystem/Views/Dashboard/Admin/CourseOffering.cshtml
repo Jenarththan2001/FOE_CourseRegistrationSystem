@@ -3,30 +3,51 @@
 }
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Offering</title>
     <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
     <link rel="stylesheet" href="~/css/CourseOffering.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
     <div class="container">
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="logo">
                 <span>FOE UOJ</span>
             </div>
             <ul class="nav-links">
-                <li><a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
-                <li><a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a></li>
-                <li class="active"><a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a></li>
-                <li><a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a></li>
-
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                </li>
+                <li >
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                </li>
         </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
 
         <!-- Main Content -->
         <div class="main-content">
@@ -36,7 +57,7 @@
                     <div class="profile-pic">
                         <img src="~/images/profile.png" alt="Admin Profile">
                     </div>
-                    <span id="admin-name">| Admin: John Doe</span>
+                    <span id="admin-name">| Admin: @ViewBag.AdminName</span>
                     <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
                 </div>
             </div>
@@ -88,12 +109,18 @@
                         <input type="date" id="closing-date">
                     </div>
                 </div>
-                <button class="btn btn-primary" id="openRegistration">Open Registration</button>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+                </div>
             </div>
 
             <!-- Courses Table -->
             <div class="courses-container">
                 <h2>Available Courses</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="selectAll">Select All</button>
+                    <button class="btn btn-primary" id="previewBtn">Preview Selected</button>
+                </div>
                 <table class="courses-table">
                     <thead>
                         <tr>
@@ -104,19 +131,44 @@
                             <th>Department</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach (var course in ViewBag.Courses)
-                        {
-                                <tr>
-                                    <td><input type="checkbox" class="course-checkbox" data-code="@course.CourseCode"></td>
-                                    <td>@course.CourseCode</td>
-                                    <td>@course.CourseName</td>
-                                    <td>@course.Credit</td>
-                                    <td>@course.Department.DepartmentName</td>
-                                </tr>
-                        }
+                    <tbody id="coursesTableBody">
+                        <!-- Courses will be dynamically loaded -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registration Preview</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3>Selected Course Details</h3>
+                <p><strong>Academic Year:</strong> <span id="preview-year"></span></p>
+                <p><strong>Semester:</strong> <span id="preview-semester"></span></p>
+                <p><strong>Registration Closing Date:</strong> <span id="preview-closing-date"></span></p>
+
+                <table class="courses-table">
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody">
+                        <!-- Selected courses will be displayed here -->
+                    </tbody>
+                </table>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="closePreview">Close</button>
+                    <button class="btn btn-success" id="confirmRegistration">Confirm & Open Registration</button>
+                </div>
             </div>
         </div>
     </div>
@@ -132,39 +184,118 @@
             }
         });
 
-        // Open Registration - Sends data to AdminController
-        $("#openRegistration").click(function () {
-            let selectedCourses = [];
-            $(".course-checkbox:checked").each(function () {
-                selectedCourses.push($(this).data("code"));
-            });
+        $("#selectAll").click(function () {
+    let allChecked = $(".course-checkbox").length === $(".course-checkbox:checked").length;
+    $(".course-checkbox").prop("checked", !allChecked); // Toggle selection
+});
 
-            let data = {
-                academicYears: $("#academic-year").val(),
-                semester: $("#semester").val(),
-                departmentId: $("#department").val(),
-                closingDate: $("#closing-date").val(),
-                selectedCourses: selectedCourses
-            };
+        // Fetch Courses on Apply Filter
+        $("#applyFilters").click(function () {
+            let semester = $("#semester").val();
+            let departmentId = $("#department").val() !== "general" ? $("#department").val() : null;
 
-            $.post("/Admin/CreateRegistrationSession", data, function (response) {
-                if (response.success) {
-                    $("#confirmationMessage").show().text(response.message);
-                    setTimeout(() => $("#confirmationMessage").hide(), 5000);
-                } else {
-                    alert(response.message);
-                }
+            $.get(`/Admin/GetFilteredCourses?semester=${semester}&departmentId=${departmentId}`, function (data) {
+                let tableBody = $("#coursesTableBody");
+                tableBody.empty();
+                data.forEach(course => {
+                    let row = `
+                        <tr>
+                            <td><input type="checkbox" class="course-checkbox" data-code="${course.courseCode}"></td>
+                            <td>${course.courseCode}</td>
+                            <td>${course.courseName}</td>
+                            <td>${course.credit}</td>
+                            <td>${course.departmentName}</td>
+                        </tr>`;
+                    tableBody.append(row);
+                });
             });
         });
 
-        // Update Date and Time
-        function updateTime() {
-            const currentDate = new Date();
-            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
-        }
+        // Preview Selected Courses
+$("#previewBtn").click(function () {
+    $("#preview-year").text($("#academic-year").val());
+    $("#preview-semester").text($("#semester").val());
+    $("#preview-closing-date").text($("#closing-date").val());
 
-        setInterval(updateTime, 1000);
+    let previewTableBody = $("#previewTableBody");
+    previewTableBody.empty();
+
+    $(".course-checkbox:checked").each(function () {
+        let row = $(this).closest("tr").clone();  // Clone the row
+        row.find("td:first-child").remove();  // Remove the first column (checkbox)
+        previewTableBody.append(row);  // Append to the preview table
+    });
+
+    $("#previewModal").fadeIn();
+});
+
+$("#confirmRegistration").click(function () {
+    let selectedCourses = [];
+    $("#previewTableBody tr").each(function () {
+        let courseCode = $(this).find("td:eq(0)").text().trim(); // Get Course Code
+        selectedCourses.push(courseCode);
+    });
+
+    let data = {
+        academicYears: $("#academic-year").val(),
+        semester: $("#semester").val(),
+        departmentId: $("#department").val(),
+        closingDate: $("#closing-date").val(),
+        selectedCourses: selectedCourses
+    };
+
+    console.log("🔹 Sending Registration Data:", data); // Debugging
+
+    $.post("/Admin/CreateRegistrationSession", data, function (response) {
+        if (response.success) {
+            $("#confirmationMessage").show().text(response.message);
+            setTimeout(() => $("#confirmationMessage").fadeOut(), 5000);
+
+            $("#previewModal").fadeOut(); // Close the preview modal
+            clearAllFields(); // Clear all form fields
+
+        } else {
+            alert(response.message);
+        }
+    }).fail(function (error) {
+        console.error("❌ Error Submitting Registration:", error);
+    });
+});
+
+function clearAllFields() {
+    // Reset dropdowns and input fields
+    $("#semester").val("");
+    $("#department").val("general").prop("disabled", true);
+    $("#academic-year").val([]);
+    $("#closing-date").val("");
+
+    // Clear checkboxes
+    $(".course-checkbox").prop("checked", false);
+
+    // Reset tables
+    $("#coursesTableBody").empty();
+    $("#previewTableBody").empty();
+}
+
+
+
+        // Close Preview Modal
+        $(".close, #closePreview").click(function () {
+            $("#previewModal").fadeOut();
+        });
+
+
+                        function updateTime() {
+                    const currentDate = new Date();
+                    document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+                    document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+                }
+
+                // Update time every second
+                setInterval(updateTime, 1000);
+
+                // Initial call to set the time immediately
+                updateTime();
     </script>
 </body>
 </html>

@@ -1,12 +1,11 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using FOE_CourseRegistrationSystem.Models;
 using System.ComponentModel.DataAnnotations.Schema;
-using FOE_CourseRegistrationSystem.Models;
+using System.ComponentModel.DataAnnotations;
 
 public class PendingRegistration
 {
     [Key]
-    public int PendingID { get; set; } // ✅ Surrogate Primary Key
+    public int PendingID { get; set; } // ✅ Primary Key
 
     public int SessionID { get; set; }
     public string CourseCode { get; set; }
@@ -23,5 +22,5 @@ public class PendingRegistration
     public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovalDate { get; set; } // ✅ Nullable if not yet approved
 
-    public string AdminRemarks { get; set; } // ✅ Remarks if rejected
+    public string? AdminRemarks { get; set; } // ✅ Ensure AdminRemarks can be NULL
 }

@@ -1,4 +1,8 @@
 ﻿@{
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student; // ✅ Explicit Type Casting
+}
+
+@{
     Layout = null;
 }
 <!DOCTYPE html>
@@ -11,6 +15,7 @@
     <link rel="stylesheet" href="~/css/RegisterNewCourse_style.css">
     <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -22,276 +27,241 @@
             </div>
             <ul class="nav-links">
                 <div class="top-links">
-                <li>
-                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
-                </li>
-                <li class="active">
-                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
-                </li>
-                <li>
-                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
-                </li>
-               
-        </div>
-        <div class="bottom-links">
-            <li class="bottom-items">
-                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-            </li>
-            <li class="bottom-items">
-                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-            </li>
-            <li class="bottom-items">
-                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
-            </li>
-        </div>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-            <h1>Register New Course</h1>
-            <div class="user-info">
-                <div class="profile-pic">
-                    <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                    <li>
+                        <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                    </li>
+                    <li class="active">
+                        <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                    </li>
                 </div>
-                <span id="student-id">| 2021E064</span>
-                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+                <div class="bottom-links">
+                    <li class="bottom-items">
+                        <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+                    </li>
+                    <li class="bottom-items">
+                        <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+                    </li>
+                    <li class="bottom-items">
+                        <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+                    </li>
+                </div>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Register New Course</h1>
+                <div class="user-info">
+                    <div class="profile-pic">
+                        <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                    </div>
+                     <span id="student-id">| @(student != null ? student.StudentID : "Unknown")</span> <!-- ✅ Safe Casting -->
+                    <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+                </div>
             </div>
-        </div>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <label for="semesterFilter"><strong>Filter by Semester:</strong></label>
-            <select id="semesterFilter" onchange="filterCourses()">
-                <option value="all">All</option>
-                <option value="Semester 1">Semester 1</option>
-                <option value="Semester 2">Semester 2</option>
-                <option value="Semester 3">Semester 3</option>
-            </select>
-        </div>
+            <!-- Filter Section -->
+<!-- Semester Filter -->
+<div class="filter-section">
+    <label for="semesterFilter"><strong>Filter by Semester:</strong></label>
+    <select id="semesterFilter" onchange="filterCourses()">
+        <!-- Options will be dynamically inserted here -->
+    </select>
+</div>
 
-        <!-- Course Registration Table -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Course Code</th>
-                        <th>Course</th>
-                        <th>Credits</th>
-                        <th>Coordinator</th>
-                        <th>Pre-requisites</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody id="courseTable">
-                    <tr data-semester="Semester 1">
-                        <td>CS103</td>
-                        <td>Introduction to Programming</td>
-                        <td>3</td>
-                        <td>Dr. Smith</td>
-                        <td>None</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="3"></td>
-                    </tr>
-                    <tr data-semester="Semester 1">
-                        <td>CS104</td>
-                        <td>Data Structures</td>
-                        <td>4</td>
-                        <td>Dr. Johnson</td>
-                        <td>CS101</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="4"></td>
-                    </tr>
-                    <tr data-semester="Semester 2">
-                        <td>CS201</td>
-                        <td>Database Systems</td>
-                        <td>3</td>
-                        <td>Dr. Lee</td>
-                        <td>CS102</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="3"></td>
-                    </tr>
-                    <tr data-semester="Semester 2">
-                        <td>CS202</td>
-                        <td>Operating Systems</td>
-                        <td>4</td>
-                        <td>Dr. Brown</td>
-                        <td>CS102</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="4"></td>
-                    </tr>
-                    <tr data-semester="Semester 3">
-                        <td>CS301</td>
-                        <td>Artificial Intelligence</td>
-                        <td>3</td>
-                        <td>Dr. White</td>
-                        <td>CS201</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="3"></td>
-                    </tr>
-                    <tr data-semester="Semester 3">
-                        <td>CS302</td>
-                        <td>Computer Networks</td>
-                        <td>4</td>
-                        <td>Dr. Green</td>
-                        <td>CS202</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="course-checkbox" onclick="updateTotalCredits()" data-credits="4"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <!-- Total Credits Display -->
-        <div class="total-credits">
-            Total Credits: <span id="totalCredits">0</span> / 24
-        </div>
+<!-- Course Registration Table -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Course Code</th>
+                <th>Course</th>
+                <th>Credits</th>
+                <th>Semester</th>  <!-- ✅ New Column -->
+                <th>Attempt</th>  <!-- ✅ New Column for Attempt Count -->
+                <th>Closing Date</th>  <!-- ✅ New Column -->
+                <th>Coordinator</th>
+                <th>Pre-requisites</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody id="courseTable">
+            <!-- Rows will be dynamically populated here -->
+        </tbody>
+    </table>
+</div>
 
-        <!-- Submit Button -->
-        <button class="submit-btn" onclick="submitCourses()">Submit Registration</button>
-    </div>
+            <!-- Total Credits Display -->
+            <div class="total-credits">
+                Total Credits: <span id="totalCredits">0</span> / 24
+            </div>
+
+            <!-- Submit Button -->
+            <button class="submit-btn" onclick="submitCourses()">Submit Registration</button>
+        </div>
     </div>
 
-    <script>
-        // List of completed courses (This would typically come from a server or database)
-        const completedCourses = ['CS101', 'CS102', 'CS202']; // Example of completed courses
+<script>
+    console.log("🔹 Page Loaded. Preparing to fetch available courses...");
 
-        function updateTotalCredits() {
-            let checkboxes = document.querySelectorAll(".course-checkbox");
-            let totalCredits = 0;
+    let allCourses = []; // ✅ Store all courses globally for filtering
 
-            checkboxes.forEach(checkbox => {
-                let row = checkbox.closest('tr');
-                let courseCode = row.querySelector('td:first-child').textContent.trim();
-                let preReq = row.querySelector('td:nth-child(5)').textContent.trim();
+    function fetchAvailableCourses() {
+        console.log("🔹 Calling GetAvailableCourses API...");
 
-                // Disable checkbox if course is already completed
-                if (completedCourses.includes(courseCode)) {
-                    checkbox.disabled = true;
-                    row.classList.add('disabled-row', 'completed-course');
-                    row.title = "Course already completed";
+        $.ajax({
+            url: '@Url.Action("GetAvailableCourses", "Student")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                allCourses = data.courses; // ✅ Store all courses globally
+                let semesters = data.semesters;
 
-                    // If somehow checked, uncheck it
-                    if (checkbox.checked) {
-                        checkbox.checked = false;
-                    }
-                }
-                // Disable checkbox if pre-requisite is not completed
-                else if (preReq !== 'None' && !completedCourses.includes(preReq)) {
-                    checkbox.disabled = true;
-                    row.classList.add('disabled-row', 'missing-prerequisite');
-                    row.title = `${preReq} not completed yet`;
+                console.log("✅ API Response Received:", allCourses);
+                console.log("✅ Available Semesters:", semesters);
 
-                    // If somehow checked, uncheck it
-                    if (checkbox.checked) {
-                        checkbox.checked = false;
-                    }
-                } else {
-                    checkbox.disabled = false;
-                    row.classList.remove('disabled-row', 'completed-course', 'missing-prerequisite');
-                    row.removeAttribute('title');
-                }
+                let semesterDropdown = $("#semesterFilter");
+                semesterDropdown.empty();
+                semesterDropdown.append(`<option value="all">All</option>`); // ✅ Default option
 
-                // If the checkbox is checked, add its credits to the total
-                if (checkbox.checked) {
-                    totalCredits += parseInt(checkbox.getAttribute("data-credits"));
-                }
-            });
-
-            if (totalCredits > 24) {
-                alert("You cannot register for more than 24 credits.");
-                event.target.checked = false; // Prevent over-selection
-                updateTotalCredits(); // Recalculate after correction
-                return;
-            }
-
-            document.getElementById("totalCredits").textContent = totalCredits;
-        }
-
-        function filterCourses() {
-            let selectedSemester = document.getElementById("semesterFilter").value;
-            let rows = document.querySelectorAll("#courseTable tr");
-
-            rows.forEach(row => {
-                if (selectedSemester === "all" || row.getAttribute("data-semester") === selectedSemester) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            // Call updateTotalCredits to recheck prerequisites after filtering
-            updateTotalCredits();
-        }
-
-        // Disable or enable the rows based on pre-requisites and completed courses
-        function checkPreRequisites() {
-            let rows = document.querySelectorAll("#courseTable tr");
-
-            rows.forEach(row => {
-                let courseCode = row.querySelector('td:first-child').textContent.trim();
-                let preReq = row.querySelector('td:nth-child(5)').textContent.trim();
-                let checkbox = row.querySelector('.course-checkbox');
-
-                // Disable row if course is already completed
-                if (completedCourses.includes(courseCode)) {
-                    checkbox.disabled = true;
-                    row.classList.add('disabled-row', 'completed-course');
-                    row.title = "Course already completed";
-                }
-                // Disable row if prerequisite is not completed
-                else if (preReq !== 'None' && !completedCourses.includes(preReq)) {
-                    checkbox.disabled = true;
-                    row.classList.add('disabled-row', 'missing-prerequisite');
-                    row.title = `Prerequisite ${preReq} must be completed first`;
-                } else {
-                    checkbox.disabled = false;
-                    row.classList.remove('disabled-row', 'completed-course', 'missing-prerequisite');
-                    row.removeAttribute('title');
-                }
-            });
-        }
-
-        function submitCourses() {
-            // Get all checked courses
-            let selectedCourses = [];
-            let checkboxes = document.querySelectorAll(".course-checkbox:checked");
-
-            checkboxes.forEach(checkbox => {
-                let row = checkbox.closest('tr');
-                let courseCode = row.querySelector('td:first-child').textContent.trim();
-                let courseName = row.querySelector('td:nth-child(2)').textContent.trim();
-                let credits = row.querySelector('td:nth-child(3)').textContent.trim();
-
-                selectedCourses.push({
-                    code: courseCode,
-                    name: courseName,
-                    credits: credits
+                semesters.forEach(sem => {
+                    semesterDropdown.append(`<option value="${sem}">Semester ${sem}</option>`);
                 });
-            });
 
-            if (selectedCourses.length === 0) {
-                alert("Please select at least one course to register.");
-                return;
+                // ✅ Populate table initially with all courses
+                populateCourseTable(allCourses);
+            },
+            error: function (xhr, status, error) {
+                console.log("❌ Failed to fetch courses:", error);
+                $("#courseTable").append("<tr><td colspan='9' style='text-align:center;color:red;'>No new courses available to register.</td></tr>");
             }
+        });
+    }
 
-            // This would typically send the data to a server
-            console.log("Registering courses:", selectedCourses);
-            alert("Courses registered successfully!");
+    function populateCourseTable(filteredCourses) {
+        let tableBody = $("#courseTable");
+        tableBody.empty();
+
+        if (filteredCourses.length === 0) {
+            console.log("❌ No available courses found for the selected semester.");
+            tableBody.append("<tr><td colspan='9' style='text-align:center;'>No new courses to register.</td></tr>");
+            return;
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            checkPreRequisites(); // Check pre-requisites and completed courses on page load
+        filteredCourses.forEach(course => {
+            let prerequisites = Array.isArray(course.prerequisites) && course.prerequisites.length > 0
+                ? course.prerequisites.join(", ")
+                : "None";  // ✅ Ensures it's never undefined
 
-            // Function to update date and time
-            function updateTime() {
-                const currentDate = new Date();
-                document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-                document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
-            }
+            console.log(`➡ Course: ${course.courseCode} - ${course.courseName}`);
 
-            // Update time every second
-            setInterval(updateTime, 1000);
+            let row = `
+                <tr data-semester="${course.semester || 'N/A'}">
+                    <td>${course.courseCode}</td> <!-- ✅ Corrected property -->
+                    <td>${course.courseName}</td> <!-- ✅ Corrected property -->
+                    <td>${course.credit}</td> <!-- ✅ Corrected property -->
+                    <td>${course.semester}</td> <!-- ✅ Display semester -->
+                    <td>${course.attempt}</td> <!-- ✅ Display attempt count -->
+                    <td>${course.closingDate}</td> <!-- ✅ Display closing date -->
+                    <td>Not Assigned</td>  <!-- ✅ Hardcoded "Not Assigned" -->
+                    <td>${prerequisites}</td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="course-checkbox" data-credits="${course.credit}" onchange="updateTotalCredits(this)">
+                    </td>
+                </tr>
+            `;
 
-            // Initial call to set the time immediately
-            updateTime();
+            tableBody.append(row);
         });
-    </script>
+
+        console.log("✅ Table updated with filtered courses.");
+    }
+
+    function filterCourses() {
+        let selectedSemester = $("#semesterFilter").val();
+        console.log(`🔹 Filtering courses for semester: ${selectedSemester}`);
+
+        if (selectedSemester === "all") {
+            populateCourseTable(allCourses); // ✅ Show all courses if "All" is selected
+        } else {
+            let filteredCourses = allCourses.filter(course => course.semester == selectedSemester);
+            populateCourseTable(filteredCourses); // ✅ Show only courses for selected semester
+        }
+    }
+
+    function updateTotalCredits(checkbox) {
+        let totalCredits = 0;
+        let selectedCheckboxes = $(".course-checkbox:checked");
+
+        selectedCheckboxes.each(function () {
+            totalCredits += parseInt($(this).data("credits"));
+        });
+
+        if (totalCredits > 24) {
+            alert("You cannot register for more than 24 credits!");
+            $(checkbox).prop("checked", false); // ✅ Prevent the selection
+            return;
+        }
+
+        $("#totalCredits").text(totalCredits);
+        console.log(`✅ Total Credits Updated: ${totalCredits}`);
+    }
+
+    $(document).ready(function () {
+        console.log("🔹 Page loaded. Fetching available courses...");
+        fetchAvailableCourses();
+    });
+
+    function updateTime() {
+        const currentDate = new Date();
+        document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+        document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    function submitCourses() {
+        let selectedCourses = [];
+        $(".course-checkbox:checked").each(function () {
+            selectedCourses.push($(this).closest("tr").find("td:first").text().trim());
+        });
+
+        if (selectedCourses.length === 0) {
+            alert("Please select at least one course to register.");
+            return;
+        }
+
+        console.log("🔹 Submitting courses:", selectedCourses);
+
+        $.ajax({
+            url: '@Url.Action("SubmitCourseRegistration", "Student")',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(selectedCourses),
+            success: function (response) {
+                alert(response.message);
+                $(".course-checkbox:checked").prop("checked", false); // ✅ Uncheck all after submission
+                $("#totalCredits").text("0"); // ✅ Reset credit count
+                fetchAvailableCourses(); // ✅ Refresh table after registration
+            },
+            error: function (xhr, status, error) {
+                console.log("❌ Failed to submit courses:", error);
+                alert("Error: " + xhr.responseJSON.message);
+            }
+        });
+    }
+</script>
+
+
+
+
+
 </body>
 </html>
