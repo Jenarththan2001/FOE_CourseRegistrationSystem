@@ -7,6 +7,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 namespace FOE_CourseRegistrationSystem.Controllers
 {
@@ -151,7 +154,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return Json(new { success = false, message = "Please fill all fields and ensure the closing date is not in the past." });
             }
 
-            bool isGeneralProgram = semester <= 8;
+            bool isGeneralProgram = semester <= 3;
             departmentId = isGeneralProgram ? null : departmentId; // Set department to NULL for General Program
 
             foreach (var academicYear in academicYears)
@@ -428,6 +431,105 @@ namespace FOE_CourseRegistrationSystem.Controllers
             public int PendingID { get; set; }
             public string Status { get; set; }
         }
+
+
+        [HttpGet]
+        public IActionResult ExportSession(int sessionID)
+        {
+            try
+            {
+                var session = _context.RegistrationSessions
+                    .Include(rs => rs.Department)
+                    .Include(rs => rs.RegistrationSessionCourses)
+                        .ThenInclude(rsc => rsc.Course)
+                    .FirstOrDefault(rs => rs.SessionID == sessionID);
+
+                if (session == null)
+                    return NotFound("Session not found.");
+
+                var courseCodes = session.RegistrationSessionCourses
+                    .Select(rsc => rsc.CourseCode)
+                    .Distinct()
+                    .ToList();
+
+                var approvedRegistrations = _context.PendingRegistrations
+                    .Where(pr => pr.SessionID == sessionID && pr.Status == "Approved")
+                    .Include(pr => pr.Student)
+                    .ToList();
+
+                var students = approvedRegistrations
+                    .Select(pr => pr.Student)
+                    .Distinct()
+                    .ToList();
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    Document document = new Document(PageSize.A4.Rotate());
+                    PdfWriter.GetInstance(document, stream);
+                    document.Open();
+
+                    document.Add(new Paragraph("\uD83D\uDCC4 Registration Session Details\n\n"));
+                    document.Add(new Paragraph($"Session ID     : {session.SessionID}"));
+                    document.Add(new Paragraph($"Academic Year  : {session.AcademicYear}"));
+                    document.Add(new Paragraph($"Semester       : {session.Semester}"));
+                    document.Add(new Paragraph($"Department     : {(session.Department != null ? session.Department.DepartmentName : "General Program")}"));
+                    document.Add(new Paragraph($"Start Date     : {session.StartDate:yyyy-MM-dd}"));
+                    document.Add(new Paragraph($"End Date       : {session.EndDate:yyyy-MM-dd}"));
+                    document.Add(new Paragraph($"Status         : {(session.IsOpen ? "Open" : "Closed")}"));
+
+                    document.Add(new Paragraph("\nOffered Courses:"));
+                    foreach (var course in session.RegistrationSessionCourses)
+                    {
+                        document.Add(new Paragraph($"  - {course.Course.CourseCode} - {course.Course.CourseName}"));
+                    }
+
+                    document.Add(new Paragraph("\n\nApproved Registrations Table\n\n"));
+
+                    PdfPTable table = new PdfPTable(courseCodes.Count + 2);
+                    table.WidthPercentage = 100;
+
+                    PdfPCell nameHeader = new PdfPCell(new Phrase("Student Name"));
+                    nameHeader.Colspan = 1;
+                    nameHeader.MinimumHeight = 25f;
+                    nameHeader.FixedHeight = 30f;
+                    nameHeader.HorizontalAlignment = Element.ALIGN_LEFT;
+                    table.AddCell(nameHeader);
+
+                    table.AddCell("Student ID");
+
+                    foreach (var code in courseCodes)
+                        table.AddCell(code);
+
+                    foreach (var student in students)
+                    {
+                        PdfPCell nameCell = new PdfPCell(new Phrase(student.FullName));
+                        nameCell.MinimumHeight = 25f;
+                        nameCell.HorizontalAlignment = Element.ALIGN_LEFT;
+                        table.AddCell(nameCell);
+
+                        table.AddCell(student.StudentID.ToString());
+                        foreach (var code in courseCodes)
+                        {
+                            bool registered = approvedRegistrations.Any(r => r.StudentID == student.StudentID && r.CourseCode == code);
+                            table.AddCell(registered ? "Yes" : "No");
+                        }
+                    }
+
+                    document.Add(table);
+                    document.Close();
+
+                    byte[] pdfBytes = stream.ToArray();
+                    return File(pdfBytes, "application/pdf", $"Session_{sessionID}.pdf");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ERROR EXPORTING PDF: {ex.Message}");
+                return BadRequest("Error generating PDF. Please try again.");
+            }
+        }
+
+
 
 
 
