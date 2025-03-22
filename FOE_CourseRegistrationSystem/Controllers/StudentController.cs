@@ -310,22 +310,20 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
             Console.WriteLine($"✅ Student {student.StudentID} is registering for {selectedCourses.Count} courses.");
 
-            // ✅ Fetch only the session for the student's academic year
             var validCourses = await _context.RegistrationSessionCourses
                 .Where(rsc => selectedCourses.Contains(rsc.CourseCode) &&
-                              _context.RegistrationSessions
-                                  .Where(rs => rs.AcademicYear == student.AcademicYear && rs.IsOpen)
-                                  .Select(rs => rs.SessionID)
-                                  .Contains(rsc.SessionID))
+                    _context.RegistrationSessions
+                        .Where(rs => rs.AcademicYear == student.AcademicYear && rs.IsOpen)
+                        .Select(rs => rs.SessionID)
+                        .Contains(rsc.SessionID))
                 .ToListAsync();
-
 
             if (!validCourses.Any())
             {
                 return BadRequest(new { message = "Selected courses are not part of the current session." });
             }
 
-            // ✅ Check for duplicate registrations (Same Student, Same Course, Same Session)
+            // ✅ Check for duplicates
             var existingRegistrations = await _context.PendingRegistrations
                 .Where(pr => pr.StudentID == student.StudentID && selectedCourses.Contains(pr.CourseCode))
                 .Select(pr => new { pr.CourseCode, pr.SessionID })
@@ -340,10 +338,48 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return BadRequest(new { message = "All selected courses have already been submitted for registration." });
             }
 
-            // ✅ Fetch available courses & their attempts
+            // ✅ Fetch prerequisites
+            var prerequisites = await _context.HasPrerequisites
+                .Where(p => selectedCourses.Contains(p.CourseCode))
+                .ToListAsync();
+
+            // ✅ Fetch student results
+            var studentResults = await _context.Results
+                .Where(r => r.StudentID == student.StudentID)
+                .Include(r => r.CourseOffering)
+                .ToListAsync();
+
+            // ✅ Check if any prerequisites are failed
+            List<string> failedPrereqCourses = new List<string>();
+
+            foreach (var prereq in prerequisites)
+            {
+                var result = studentResults.FirstOrDefault(r => r.CourseOffering.CourseCode == prereq.PrerequisiteCode);
+
+                if (result != null)
+                {
+                    double average = (result.InCourse + result.EndMarks) / 2.0;
+                    if (average < 50)
+                    {
+                        failedPrereqCourses.Add(prereq.CourseCode);
+                    }
+                }
+                // If result is null (not attempted), we allow registration
+            }
+
+            if (failedPrereqCourses.Any())
+            {
+                return BadRequest(new
+                {
+                    message = "You have failed prerequisite courses required for registration.",
+                    failedCourses = failedPrereqCourses
+                });
+            }
+
+            // ✅ Fetch attempts
             var availableCourses = await GetAvailableCoursesList(student.StudentID);
 
-            // ✅ Insert into `PendingRegistration` table
+            // ✅ Proceed to registration
             var pendingRegistrations = newCourses.Select(course => new PendingRegistration
             {
                 SessionID = course.SessionID,
@@ -351,7 +387,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 StudentID = student.StudentID,
                 Status = "Pending",
                 RegistrationDate = DateTime.UtcNow,
-                Attempt = availableCourses.FirstOrDefault(ac => ac.CourseCode == course.CourseCode)?.Attempt ?? 1, // ✅ Fetch attempt from GetAvailableCoursesList
+                Attempt = availableCourses.FirstOrDefault(ac => ac.CourseCode == course.CourseCode)?.Attempt ?? 1,
                 IsApprovedByAdvisor = "No"
             }).ToList();
 
