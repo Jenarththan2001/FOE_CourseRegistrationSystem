@@ -54,12 +54,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
                 if (staff != null)
                 {
-                    string roleName = staff.Role.ToString();
+                    string roleName = staff.Role.ToString(); // No manual renaming
                     await SignInUser(staff.Email, roleName, staff.StaffID);
 
                     return roleName switch
                     {
-                        "Advisor" => RedirectToAction("AdviserDashboard", "Dashboard"),
+                        "Advisor" => RedirectToAction("AdviserDashboard", "Advisor"),
                         "AR" => RedirectToAction("AdminDashboard", "Admin"),
                         "Coordinator" => RedirectToAction("CoordinatorDashboard", "Dashboard"),
                         _ => RedirectToAction("Login", "Account"),
@@ -96,6 +96,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
+            Console.WriteLine($"✔️ Logging in with role: {role}");
+
         }
 
         [HttpPost]
