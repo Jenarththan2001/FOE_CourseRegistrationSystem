@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="~/css/Advisor_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -62,19 +63,247 @@
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>
-        </<div>
-            <script>
-                function updateTime() {
-                    const currentDate = new Date();
-                    document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-                    document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
-                }
 
-                // Update time every second
-                setInterval(updateTime, 1000);
+        <!-- Advisor Content -->
+        <div class="advisor-content">
+            <!-- Filter and Search Section -->
+            <div class="filter-section card">
+                <div class="filter-container">
+                    <div class="department-filter">
+                        <label for="department-select">Department:</label>
+                        <select id="department-select">
+                            <option value="all">All Departments</option>
+                        </select>
+                    </div>
+                    <div class="year-filter">
+                        <label for="year-select">Academic Year:</label>
+<select id="year-select">
+    <option value="all">All Years</option>
+</select>
 
-                // Initial call to set the time immediately
-                updateTime();
-            </script>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search students...">
+                        <button id="search-button"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advisor Table -->
+            <div class="advisor-table card">
+                <h2>Student Advisor Information</h2>
+                <div class="table-container">
+                    <table id="advisor-data-table">
+                        <thead>
+                            <tr>
+                                <th>Reg No</th>
+                                <th>Student Name</th>
+                                <th>Advisor Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advisor-table-body">
+                            <!-- Table data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing <span id="start-record">1</span> to <span id="end-record">10</span> of <span id="total-records">0</span> entries
+                    </div>
+                    <div class="pagination-controls">
+                        <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                        <div id="page-numbers" class="page-numbers"></div>
+                        <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+
+        // Pagination variables
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let filteredData = [];
+
+        // Function to display advisor data with pagination
+        function displayAdvisorData(data) {
+            filteredData = data;
+            const tableBody = document.getElementById('advisor-table-body');
+            const totalRecords = document.getElementById('total-records');
+            const startRecord = document.getElementById('start-record');
+            const endRecord = document.getElementById('end-record');
+            const pageNumbers = document.getElementById('page-numbers');
+
+            // Update pagination info
+            totalRecords.textContent = data.length;
+
+            // Calculate total pages
+            const totalPages = Math.ceil(data.length / rowsPerPage);
+
+            // Adjust current page if needed
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+
+            // Calculate start and end indices for current page
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+
+            // Update pagination display
+            startRecord.textContent = data.length > 0 ? startIndex + 1 : 0;
+            endRecord.textContent = endIndex;
+
+            // Enable/disable pagination buttons
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages || totalPages === 0;
+
+            // Generate page number buttons
+            pageNumbers.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = i === currentPage ? 'active' : '';
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    displayAdvisorData(filteredData);
+                });
+                pageNumbers.appendChild(pageButton);
+            }
+
+            // Clear table
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" class="no-data">No data found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+
+            // Display current page data
+            for (let i = startIndex; i < endIndex; i++) {
+                const item = data[i];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.regNo}</td>
+                    <td>${item.studentName}</td>
+                    <td>${item.advisorName}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Function to filter advisor data
+        function filterAdvisorData() {
+            const departmentFilter = document.getElementById('department-select').value;
+            const yearFilter = document.getElementById('year-select').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = advisorData;
+
+            // Filter by department
+            if (departmentFilter !== 'all') {
+                filtered = filtered.filter(item => item.department === departmentFilter);
+            }
+
+            // Filter by academic year
+            if (yearFilter !== 'all') {
+                filtered = filtered.filter(item => item.year === yearFilter);
+            }
+
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(item =>
+                    item.regNo.toLowerCase().includes(searchTerm) ||
+                    item.studentName.toLowerCase().includes(searchTerm) ||
+                    item.advisorName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Reset to first page when filtering
+            currentPage = 1;
+            displayAdvisorData(filtered);
+        }
+
+let advisorData = [];
+
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        // Fetch advisor-student list
+        const response = await fetch('/Admin/GetAdvisorStudentList');
+        advisorData = await response.json();
+
+        // Fetch and populate departments
+        const deptResponse = await fetch('/Admin/GetStudentDepartments');
+        const departments = await deptResponse.json();
+
+        const deptSelect = document.getElementById('department-select');
+        deptSelect.innerHTML = '<option value="all">All Departments</option>';
+        departments.forEach(dep => {
+            const opt = document.createElement('option');
+            opt.value = dep;
+            opt.textContent = dep;
+            deptSelect.appendChild(opt);
+        });
+
+        // Initial render
+        displayAdvisorData(advisorData);
+    } catch (err) {
+        console.error("Error fetching advisor/student data:", err);
+    }
+
+    // Filters
+    document.getElementById('department-select').addEventListener('change', filterAdvisorData);
+    document.getElementById('year-select').addEventListener('change', filterAdvisorData);
+    document.getElementById('search-input').addEventListener('input', filterAdvisorData);
+    document.getElementById('search-button').addEventListener('click', filterAdvisorData);
+
+    // Pagination
+    document.getElementById('prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            displayAdvisorData(filteredData);
+        }
+    });
+
+    document.getElementById('next-page').addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            displayAdvisorData(filteredData);
+        }
+    });
+
+    // Fetch and populate academic years dynamically
+const yearResponse = await fetch('/Admin/GetAcademicYears');
+const years = await yearResponse.json();
+
+const yearSelect = document.getElementById('year-select');
+yearSelect.innerHTML = '<option value="all">All Years</option>';
+years.forEach(year => {
+    const opt = document.createElement('option');
+    opt.value = year;
+    opt.textContent = year;
+    yearSelect.appendChild(opt);
+});
+});
+
+    </script>
 </body>
 </html>

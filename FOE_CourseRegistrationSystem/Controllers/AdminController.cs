@@ -530,6 +530,48 @@ namespace FOE_CourseRegistrationSystem.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> GetAdvisorStudentList()
+        {
+            var data = await _context.Students
+                .Where(s => s.StaffID != null)
+                .Include(s => s.Advisor)
+                .Select(s => new {
+                    regNo = s.StudentID.ToString(),
+                    studentName = s.FullName,
+                    advisorName = s.Advisor.FullName,
+                    department = s.Department.DepartmentName,
+                    year = s.AcademicYear
+                })
+                .ToListAsync();
+
+            return Json(data);
+        }
+
+        [HttpGet]
+        public IActionResult GetStudentDepartments()
+        {
+            var departments = _context.Students
+                .Include(s => s.Department)
+                .Where(s => s.Department != null)
+                .Select(s => s.Department.DepartmentName)
+                .Distinct()
+                .ToList();
+
+            return Json(departments);
+        }
+
+        [HttpGet]
+        public IActionResult GetAcademicYears()
+        {
+            var years = _context.Students
+                .Select(s => s.AcademicYear)
+                .Distinct()
+                .OrderByDescending(y => y)
+                .ToList();
+
+            return Json(years);
+        }
 
 
 
