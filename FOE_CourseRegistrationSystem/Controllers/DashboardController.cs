@@ -8,8 +8,9 @@ namespace FOE_CourseRegistrationSystem.Controllers
         [Authorize(Roles = "Student")]
         public IActionResult StudentDashboard() => View();
 
-        [Authorize(Roles = "Adviser")]
+        [Authorize(Roles = "Advisor")] // ✅ This matches enum
         public IActionResult AdviserDashboard() => View();
+
 
         [Authorize(Roles = "AR")]
         public IActionResult AdminDashboard() => View();
