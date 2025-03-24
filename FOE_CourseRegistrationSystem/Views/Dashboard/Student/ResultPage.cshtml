@@ -1,0 +1,212 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results</title>
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="~/css/StudentResults_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+               
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="@Url.Action("Login", "Account")"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Student - Results</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                </div>
+                <span id="student-id">| 2021E064</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Results Content -->
+        <div class="results-content">
+            <!-- Filter and Search Section -->
+            <div class="filter-section card">
+                <div class="filter-container">
+                    <div class="semester-filter">
+                        <label for="semester-select">Semester:</label>
+                        <select id="semester-select">
+                            <option value="all">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search courses...">
+                        <button id="search-button"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table Cards -->
+            <div class="results-table card">
+                <h2>Course Results</h2>
+                <div class="results-cards" id="results-container">
+                    <!-- Course Result Cards will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Function to update date and time
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+        // Sample data for course results
+        const courseResults = [
+            { semester: 1, courseCode: "CS1010", courseName: "Introduction to Programming", marks: 85, result: "A", status: "Pass" },
+            { semester: 1, courseCode: "MA1001", courseName: "Calculus I", marks: 78, result: "B+", status: "Pass" },
+            { semester: 1, courseCode: "PH1020", courseName: "Physics for Engineers", marks: 92, result: "A+", status: "Pass" },
+            { semester: 1, courseCode: "EN1010", courseName: "Technical Communication", marks: 65, result: "C+", status: "Pass" },
+            { semester: 2, courseCode: "CS1020", courseName: "Data Structures", marks: 88, result: "A", status: "Pass" },
+            { semester: 2, courseCode: "MA1002", courseName: "Calculus II", marks: 72, result: "B", status: "Pass" },
+            { semester: 2, courseCode: "EE1010", courseName: "Electrical Engineering Basics", marks: 45, result: "F", status: "Fail" },
+            { semester: 2, courseCode: "ME1010", courseName: "Engineering Mechanics", marks: 81, result: "A-", status: "Pass" },
+            { semester: 3, courseCode: "CS2010", courseName: "Algorithms", marks: 79, result: "B+", status: "Pass" },
+            { semester: 3, courseCode: "CS2020", courseName: "Database Systems", marks: 91, result: "A+", status: "Pass" },
+            { semester: 3, courseCode: "CS2030", courseName: "Computer Networks", marks: 42, result: "F", status: "Fail" },
+            { semester: 3, courseCode: "MA2001", courseName: "Discrete Mathematics", marks: 75, result: "B", status: "Pass" }
+        ];
+
+        // Function to display course results
+        function displayResults(results) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+
+            if (results.length === 0) {
+                container.innerHTML = '<p class="no-results">No results found.</p>';
+                return;
+            }
+
+            results.forEach(course => {
+                const card = document.createElement('div');
+                card.className = `result-card ${course.status.toLowerCase()}`;
+
+                card.innerHTML = `
+                    <div class="course-header">
+                        <h3>${course.courseCode}</h3>
+                        <span class="semester-badge">Semester ${course.semester}</span>
+                    </div>
+                    <div class="course-details">
+                        <p class="course-name">${course.courseName}</p>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Marks</span>
+                                <span class="detail-value">${course.marks}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Result</span>
+                                <span class="detail-value">${course.result}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value status-${course.status.toLowerCase()}">${course.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+               // Function to filter results based on semester and search term
+        function filterResults() {
+            const selectedSemester = document.getElementById('semester-select').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filteredResults = courseResults;
+
+            // Filter by semester only if not searching
+            if (selectedSemester !== 'all' && !searchTerm) {
+                filteredResults = filteredResults.filter(course =>
+                    course.semester === parseInt(selectedSemester)
+                );
+            }
+
+            // Filter by search term across all semesters
+            if (searchTerm) {
+                filteredResults = filteredResults.filter(course =>
+                    course.courseCode.toLowerCase().includes(searchTerm) ||
+                    course.courseName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            displayResults(filteredResults);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display all results initially
+            displayResults(courseResults);
+
+            // Add event listeners for filtering
+            document.getElementById('semester-select').addEventListener('change', filterResults);
+            document.getElementById('search-input').addEventListener('input', filterResults);
+            document.getElementById('search-button').addEventListener('click', filterResults);
+        });
+
+    </script>
+</body>
+</html>

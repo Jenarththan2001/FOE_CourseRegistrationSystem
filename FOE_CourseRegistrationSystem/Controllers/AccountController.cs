@@ -25,7 +25,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login() => View("custom_login");
+
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -54,7 +55,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 if (!string.IsNullOrEmpty(student.Password) && student.Password == model.Password)
                 {
                     await SignInUser(student.Email, "Student");
-                    return RedirectToAction("StudentDashboard", "Dashboard");
+                    // Redirect to the new StudentController Dashboard action
+                    return RedirectToAction("Dashboard", "Student");
                 }
                 else
                 {
@@ -77,14 +79,14 @@ namespace FOE_CourseRegistrationSystem.Controllers
                     {
                         await SignInUser(staff.Email, "Adviser");
                         Console.WriteLine("🔹 Redirecting to AdviserDashboard...");
-                        return RedirectToAction("AdviserDashboard", "Dashboard");
+                        return RedirectToAction("AdviserDashboard", "Adviser");
                     }
 
                     else if (staff.Role == "AR")
                     {
                         await SignInUser(staff.Email, "AR");
                         Console.WriteLine("🔹 Redirecting to AdminDashboard...");
-                        return RedirectToAction("AdminDashboard", "Dashboard");
+                        return RedirectToAction("AdminDashboard", "Admin");
                     }
 
                 }

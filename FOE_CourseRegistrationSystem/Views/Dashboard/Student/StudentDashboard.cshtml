@@ -1,0 +1,163 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                    <!-- In the navigation section of StudentDashboard.cshtml, update the links -->
+                <li class="active">
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+
+
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Student - Dashboard</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                </div>
+                <span id="student-id">| 2021E064</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Personal Details Card -->
+            <div class="card personal-details">
+                <h2>Personal details</h2>
+                <div class="details-content">
+                    <p><span>Name :</span> - <span>KANISTAN K.</span></p>
+                    <p><span>Reg No :</span> - <span>2021E064</span></p>
+                    <p><span>Phone :</span> - <span>0772664192</span></p>
+                    <p><span>Email :</span> - <span>2021e064@eng.jfn.ac.lk</span></p>
+                    <p><span>Address :</span> - <span>POINT PEDRO, JAFFNA.</span></p>
+                    <p><span>Advisor :</span> - <span>Dr. J. PIRATHEEPA</span></p>
+                </div>
+            </div>
+
+            <!-- GPA Card -->
+            <div class="card gpa-card">
+                <h2>GPA : 3.2</h2>
+            </div>
+
+            <!-- Remaining Credits Card -->
+            <div class="card credits-card">
+                <h2>Remaining Credits : 6/24</h2>
+                <canvas id="creditsChart"></canvas>
+            </div>
+
+            <!-- Notification Card -->
+            <div class="card notification-card">
+                <div class="notification-content">
+                    <p>Some new semesters are opened to register</p>
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+
+            <!-- Total Credits Card -->
+            <div class="card total-credits-card">
+                <h2>Total Credits : 90/120</h2>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Function to update date and time
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+        // Credits Chart
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('creditsChart').getContext('2d');
+
+            const creditsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Remaining'],
+                    datasets: [{
+                        data: [75, 0, 25],
+                        backgroundColor: [
+                            '#6c5ce7', // Blue
+                            '#00CC66', // Green
+                            '#a29bfe'  // Yellow
+                        ],
+                        borderWidth: 0,
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

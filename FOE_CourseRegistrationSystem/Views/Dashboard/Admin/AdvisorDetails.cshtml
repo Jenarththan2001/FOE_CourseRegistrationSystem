@@ -1,0 +1,296 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="~/css/Advisor_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                </li>
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">| Admin: John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Advisor Content -->
+        <div class="advisor-content">
+            <!-- Filter and Search Section -->
+            <div class="filter-section card">
+                <div class="filter-container">
+                    <div class="department-filter">
+                        <label for="department-select">Department:</label>
+                        <select id="department-select">
+                            <option value="all">All Departments</option>
+                            <option value="CSE">Computer Science & Engineering</option>
+                            <option value="EEE">Electrical & Electronic Engineering</option>
+                            <option value="CE">Civil Engineering</option>
+                            <option value="ME">Mechanical Engineering</option>
+                        </select>
+                    </div>
+                    <div class="year-filter">
+                        <label for="year-select">Academic Year:</label>
+                        <select id="year-select">
+                            <option value="all">All Years</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search students...">
+                        <button id="search-button"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advisor Table -->
+            <div class="advisor-table card">
+                <h2>Student Advisor Information</h2>
+                <div class="table-container">
+                    <table id="advisor-data-table">
+                        <thead>
+                            <tr>
+                                <th>Reg No</th>
+                                <th>Student Name</th>
+                                <th>Advisor Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advisor-table-body">
+                            <!-- Table data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing <span id="start-record">1</span> to <span id="end-record">10</span> of <span id="total-records">0</span> entries
+                    </div>
+                    <div class="pagination-controls">
+                        <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                        <div id="page-numbers" class="page-numbers"></div>
+                        <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+        // Sample data for advisor information
+        const advisorData = [
+            { regNo: "2021E064", studentName: "KANISTAN K.", advisorName: "Dr. J. PIRATHEEPA", department: "CSE", year: "2021" },
+            { regNo: "2021E065", studentName: "JOHN DOE", advisorName: "Dr. S. MAHESAN", department: "CSE", year: "2021" },
+            { regNo: "2021E066", studentName: "JANE SMITH", advisorName: "Dr. J. PIRATHEEPA", department: "CSE", year: "2021" },
+            { regNo: "2021E067", studentName: "ROBERT JOHNSON", advisorName: "Dr. S. MAHESAN", department: "CSE", year: "2021" },
+            { regNo: "2021E068", studentName: "SARAH WILLIAMS", advisorName: "Dr. J. PIRATHEEPA", department: "CSE", year: "2021" },
+            { regNo: "2022E045", studentName: "MICHAEL BROWN", advisorName: "Dr. K. THABOTHARAN", department: "EEE", year: "2022" },
+            { regNo: "2022E046", studentName: "EMILY DAVIS", advisorName: "Dr. S. THIRUKUMARAN", department: "EEE", year: "2022" },
+            { regNo: "2022E047", studentName: "DAVID MILLER", advisorName: "Dr. K. THABOTHARAN", department: "EEE", year: "2022" },
+            { regNo: "2023C032", studentName: "LISA WILSON", advisorName: "Dr. P. JEYAKUMAR", department: "CE", year: "2023" },
+            { regNo: "2023C033", studentName: "MARK TAYLOR", advisorName: "Dr. S. SRISATKUNARAJAH", department: "CE", year: "2023" },
+            { regNo: "2023M028", studentName: "JAMES ANDERSON", advisorName: "Dr. T. THIRUVARAN", department: "ME", year: "2023" },
+            { regNo: "2024E052", studentName: "JENNIFER THOMAS", advisorName: "Dr. J. PIRATHEEPA", department: "CSE", year: "2024" }
+        ];
+
+        // Pagination variables
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let filteredData = [];
+
+        // Function to display advisor data with pagination
+        function displayAdvisorData(data) {
+            filteredData = data;
+            const tableBody = document.getElementById('advisor-table-body');
+            const totalRecords = document.getElementById('total-records');
+            const startRecord = document.getElementById('start-record');
+            const endRecord = document.getElementById('end-record');
+            const pageNumbers = document.getElementById('page-numbers');
+
+            // Update pagination info
+            totalRecords.textContent = data.length;
+
+            // Calculate total pages
+            const totalPages = Math.ceil(data.length / rowsPerPage);
+
+            // Adjust current page if needed
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+
+            // Calculate start and end indices for current page
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+
+            // Update pagination display
+            startRecord.textContent = data.length > 0 ? startIndex + 1 : 0;
+            endRecord.textContent = endIndex;
+
+            // Enable/disable pagination buttons
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages || totalPages === 0;
+
+            // Generate page number buttons
+            pageNumbers.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = i === currentPage ? 'active' : '';
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    displayAdvisorData(filteredData);
+                });
+                pageNumbers.appendChild(pageButton);
+            }
+
+            // Clear table
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" class="no-data">No data found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+
+            // Display current page data
+            for (let i = startIndex; i < endIndex; i++) {
+                const item = data[i];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.regNo}</td>
+                    <td>${item.studentName}</td>
+                    <td>${item.advisorName}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Function to filter advisor data
+        function filterAdvisorData() {
+            const departmentFilter = document.getElementById('department-select').value;
+            const yearFilter = document.getElementById('year-select').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = advisorData;
+
+            // Filter by department
+            if (departmentFilter !== 'all') {
+                filtered = filtered.filter(item => item.department === departmentFilter);
+            }
+
+            // Filter by academic year
+            if (yearFilter !== 'all') {
+                filtered = filtered.filter(item => item.year === yearFilter);
+            }
+
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(item =>
+                    item.regNo.toLowerCase().includes(searchTerm) ||
+                    item.studentName.toLowerCase().includes(searchTerm) ||
+                    item.advisorName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Reset to first page when filtering
+            currentPage = 1;
+            displayAdvisorData(filtered);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display all data initially
+            displayAdvisorData(advisorData);
+
+            // Add event listeners for filtering
+            document.getElementById('department-select').addEventListener('change', filterAdvisorData);
+            document.getElementById('year-select').addEventListener('change', filterAdvisorData);
+            document.getElementById('search-input').addEventListener('input', filterAdvisorData);
+            document.getElementById('search-button').addEventListener('click', filterAdvisorData);
+
+            // Pagination controls
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayAdvisorData(filteredData);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayAdvisorData(filteredData);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

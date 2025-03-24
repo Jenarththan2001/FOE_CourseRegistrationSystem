@@ -1,0 +1,160 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Courses</title>
+    <link rel="stylesheet" href="~/css/RegisteredCourse_style.css">
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+              
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Registered Courses</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                </div>
+                <span id="student-id">| 2021E064</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <select id="semesterFilter">
+                <option value="">Filter by Semester</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+            </select>
+        </div>
+
+        <!-- Course Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Credits</th>
+                        <th>Coordinator</th>
+                        <th>Pre-requisites</th>
+                        <th>Approval Status</th>
+                    </tr>
+                </thead>
+                <tbody id="courseTableBody">
+                    <tr data-semester="1">
+                        <td>CS101</td>
+                        <td>Introduction to Programming</td>
+                        <td>3</td>
+                        <td>Dr. Smith</td>
+                        <td>None</td>
+                        <td class="status-approved"><i class="fas fa-check-circle"></i></td>
+                    </tr>
+                    <tr data-semester="2">
+                        <td>CS201</td>
+                        <td>Data Structures</td>
+                        <td>4</td>
+                        <td>Dr. Johnson</td>
+                        <td>CS101</td>
+                        <td class="status-pending"><i class="fas fa-hourglass-half"></i></td>
+                    </tr>
+                    <tr data-semester="3">
+                        <td>CS301</td>
+                        <td>Database Systems</td>
+                        <td>3</td>
+                        <td>Dr. Brown</td>
+                        <td>CS201</td>
+                        <td class="status-rejected"><i class="fas fa-times-circle"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function goBack() {
+           window.history.back();
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            const semesterFilter = document.getElementById("semesterFilter");
+            const courseTableBody = document.getElementById("courseTableBody");
+
+            semesterFilter.addEventListener("change", filterCourses);
+
+            function filterCourses() {
+                const selectedSemester = semesterFilter.value;
+
+                const rows = courseTableBody.getElementsByTagName("tr");
+
+                for (let row of rows) {
+                    const courseSemester = row.getAttribute("data-semester");
+
+                    if (selectedSemester === "" || courseSemester === selectedSemester) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                }
+            }
+        });
+
+        // Function to update date and time
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+    </script>
+</body>
+
+</html>
