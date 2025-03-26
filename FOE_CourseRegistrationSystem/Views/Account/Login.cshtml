@@ -1,5 +1,6 @@
 ﻿@model FOE_CourseRegistrationSystem.Models.ViewModels.LoginViewModel
 
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -21,6 +22,39 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Login</button>
                     </form>
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Course Registration System</title>
+    <link rel="stylesheet" href="~/css/CustomLogin.css" />
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="content">
+                <h1>Welcome to Faculty course Registration System</h1>
+                <p>Faculty of Engineering, University of Jaffna.</p>
+                <p>Join us to experience the best Course registration system!</p>
+                
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="login-form">
+                <h2>Login</h2>
+                <div class="avatar-container">
+                    <img src="@Url.Content("~/images/profile.png")" alt="Avatar" class="avatar" />
+
                 </div>
             </div>
         </div>
