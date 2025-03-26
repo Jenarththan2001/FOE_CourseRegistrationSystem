@@ -50,10 +50,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Advisor/AdviseeStudents.cshtml");
         }
 
-        public IActionResult CoordinatingCourses()
-        {
-            return View("~/Views/Dashboard/Advisor/CoordinatingCourses.cshtml");
-        }
 
         [HttpGet]
         public async Task<IActionResult> GetPendingRegistrations(int studentId)

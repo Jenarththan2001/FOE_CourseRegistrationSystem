@@ -61,9 +61,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
                     {
                         "Advisor" => RedirectToAction("AdviserDashboard", "Advisor"),
                         "AR" => RedirectToAction("AdminDashboard", "Admin"),
-                        "Coordinator" => RedirectToAction("CoordinatorDashboard", "Dashboard"),
+                        "Coordinator" => RedirectToAction("CoordinatorDashboard", "Coordinator"),
                         _ => RedirectToAction("Login", "Account"),
                     };
+
                 }
             }
             catch (Exception ex)

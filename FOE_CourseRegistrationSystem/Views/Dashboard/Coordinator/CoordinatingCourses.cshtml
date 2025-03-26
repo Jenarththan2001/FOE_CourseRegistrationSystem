@@ -1,0 +1,198 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinator Dashboard</title>
+    <link rel="stylesheet" href="~/css/CoordinatingCourses.css">
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <span>FOE UOJ</span>
+        </div>
+        <ul class="nav-links">
+            <div class="top-links">
+                <li>
+                    <a href="@Url.Action("CoordinatorDashboard", "Coordinator")">
+                        <i class="fas fa-home"></i><span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("CoordinatingCourses", "Coordinator")">
+                        <i class="fas fa-book"></i><span>Coordinating Courses</span>
+                    </a>
+                </li>
+            </div>
+            <div class="bottom-links">
+                <li class="bottom-items">
+                    <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+                </li>
+            </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Coordinating Course Details</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Coordinator Profile">
+                </div>
+                <span id="admin-name">| Coordinator: John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Coordinating Courses Table -->
+        <div class="table-container">
+            <table class="coordinating-courses-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Number of Students</th>
+                        <th>Student Details</th>
+                    </tr>
+                </thead>
+                <tbody id="coordinatedCoursesBody">
+                    <!-- Dynamic content inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Student List Modal -->
+    <div id="studentListModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Student List for <span id="modalCourseCode"></span></h2>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>RegNo</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="studentListBody">
+                    <!-- Dynamic student list inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        function loadCoordinatedCourses() {
+            fetch('/Coordinator/GetCoordinatedCourses')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById("coordinatedCoursesBody");
+                    tbody.innerHTML = "";
+
+                    data.forEach(course => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${course.courseCode}</td>
+                            <td>${course.courseName}</td>
+                            <td>${course.studentCount}</td>
+                            <td>
+                                <button class="action-button view-students-button" data-coursecode="${course.courseCode}">
+                                    <i class="fas fa-eye"></i> View Students
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    bindViewButtons();
+                })
+                .catch(error => console.error('Error loading courses:', error));
+        }
+
+function bindViewButtons() {
+    const viewStudentButtons = document.querySelectorAll(".view-students-button");
+    const studentListModal = document.getElementById("studentListModal");
+    const modalCourseCode = document.getElementById("modalCourseCode");
+    const studentListBody = document.getElementById("studentListBody");
+
+    viewStudentButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            const courseCode = this.getAttribute("data-coursecode");
+            modalCourseCode.textContent = courseCode;
+            studentListBody.innerHTML = "";
+
+            // ✅ Fetch real student data
+            fetch(`/Coordinator/GetStudentsByCourse?courseCode=${courseCode}`)
+                .then(res => res.json())
+                .then(students => {
+                    if (students.length === 0) {
+                        studentListBody.innerHTML = `<tr><td colspan="3">No students found.</td></tr>`;
+                    } else {
+                        students.forEach(student => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${student.regNo}</td>
+                                <td>${student.fullName}</td>
+                                <td>${student.email}</td>
+                            `;
+                            studentListBody.appendChild(row);
+                        });
+                    }
+
+                    studentListModal.style.display = "block";
+                })
+                .catch(err => {
+                    console.error("Error fetching students:", err);
+                    studentListBody.innerHTML = `<tr><td colspan="3">Error loading student data</td></tr>`;
+                    studentListModal.style.display = "block";
+                });
+        });
+    });
+
+    document.querySelector(".close").addEventListener("click", function () {
+        studentListModal.style.display = "none";
+    });
+
+    window.addEventListener("click", function (event) {
+        if (event.target === studentListModal) {
+            studentListModal.style.display = "none";
+        }
+    });
+}
+
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            updateTime();
+            setInterval(updateTime, 1000);
+            loadCoordinatedCourses();
+        });
+    </script>
+</body>
+
+</html>
