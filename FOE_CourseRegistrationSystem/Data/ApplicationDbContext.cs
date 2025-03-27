@@ -26,6 +26,7 @@ namespace FOE_CourseRegistrationSystem.Data
         public DbSet<Notification> Notifications { get; set; }
 >>>>>>> Stashed changes
 
+        public DbSet<Notification> Notifications { get; set; } // ✅ Added Notification
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -40,7 +41,11 @@ namespace FOE_CourseRegistrationSystem.Data
             modelBuilder.Entity<Staff>().ToTable("Staff");
             modelBuilder.Entity<Department>().ToTable("Department");
             modelBuilder.Entity<Course>().ToTable("Course");
+<<<<<<< Updated upstream
             modelBuilder.Entity<Notification>().ToTable("Notification");
+=======
+            modelBuilder.Entity<Notification>().ToTable("Notification"); // ✅ Added Notification mapping
+>>>>>>> Stashed changes
 
             // Configure Notification entity
             modelBuilder.Entity<Notification>(entity =>
