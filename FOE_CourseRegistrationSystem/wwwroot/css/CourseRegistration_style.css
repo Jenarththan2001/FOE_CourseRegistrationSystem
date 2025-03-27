@@ -160,9 +160,9 @@ body {
     border-radius: 7px;
 }
 
-.dashboard-content h2 {
-    color: var(--primary-color);
-}
+    .dashboard-content h2 {
+        color: var(--primary-color);
+    }
 
 .button-container {
     display: flex;

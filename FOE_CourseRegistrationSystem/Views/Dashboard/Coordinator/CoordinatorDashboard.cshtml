@@ -15,21 +15,23 @@
 
 <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <span>FOE UOJ</span>
-        </div>
-        <ul class="nav-links">
-            <div class="top-links">
+<div class="sidebar" id="sidebar">
+    <div class="logo">
+        <span>FOE UOJ</span>
+    </div>
+    <ul class="nav-links">
+        <div class="top-links">
             <li class="active">
-                <a href="@Url.Action("AdviserDashboard", "Advisor")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                <a href="@Url.Action("CoordinatorDashboard", "Coordinator")"><i class="fas fa-home"></i><span>Dashboard</span></a>
             </li>
             <li>
-                <a href="@Url.Action("AdviseeStudents", "Advisor")"><i class="fas fa-users"></i><span>Advisee Course Registration</span></a>
+                <a href="@Url.Action("CoordinatingCourses", "Coordinator")"><i class="fas fa-book"></i><span>Coordinating Courses</span></a>
             </li>
-            
-    </div>
+        </div>
     <div class="bottom-links">
+        <li class="bottom-items">
+            <a href="@Url.Action("FAQs", "Coordinator")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+        </li>
         <li class="bottom-items">
             <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
         </li>
@@ -41,7 +43,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Advisor Dashboard</h1>
+            <h1>Coordinator Dashboard</h1>
             <div class="user-info">
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
@@ -50,6 +52,7 @@
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>
+
 
         <!-- Dashboard Content -->
         <div class="dashboard-content">
@@ -78,24 +81,23 @@
             </div>
 
         </div>
+        
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
 
 
-
-        <script>
-            function updateTime() {
-                const currentDate = new Date();
-                document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-                document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
-            }
-
-            // Update time every second
-            setInterval(updateTime, 1000);
-
-            // Initial call to set the time immediately
-            updateTime();
-
-
-        </script>
+    </script>
 </body>
 
 </html>

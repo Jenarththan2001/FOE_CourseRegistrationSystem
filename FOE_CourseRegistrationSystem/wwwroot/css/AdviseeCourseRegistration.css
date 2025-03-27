@@ -303,20 +303,21 @@ tbody tr:hover {
 }
 
 .student-info {
-    background-color: #f0f0f0;
+/*    background-color: #f0f0f0;*/
     padding: 15px;
     border-radius: 5px;
     margin-bottom: 20px;
-    display: flex;
+/*    display: flex;*/
     justify-content: space-between;
-}
-
-.student-info-item {
-    font-weight: bold;
 }
 
 .student-info-value {
     margin-left: 5px;
+}
+
+/* Highlighting Styles */
+.red {
+    color: red;
 }
 
 /*Action Button Styles*/

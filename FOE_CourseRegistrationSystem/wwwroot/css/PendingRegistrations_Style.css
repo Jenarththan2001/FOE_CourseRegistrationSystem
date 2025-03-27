@@ -388,7 +388,7 @@ tr:hover {
     cursor: pointer;
     margin: 2px;
     transition: all 0.3s ease-in-out;
-    background-color:transparent;
+    background-color: transparent;
 }
 
 /* ✅ Approve Button */

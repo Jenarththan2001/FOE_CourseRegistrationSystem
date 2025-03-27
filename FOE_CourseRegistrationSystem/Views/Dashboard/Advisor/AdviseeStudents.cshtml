@@ -28,17 +28,8 @@
             <li class="active">
                 <a href="@Url.Action("AdviseeStudents", "Advisor")"><i class="fas fa-users"></i><span>Advisee Course Registration</span></a>
             </li>
-            <li>
-                <a href="@Url.Action("CoordinatingCourses", "Advisor")"><i class="fas fa-book"></i><span>Coordinating Courses</span></a>
-            </li>
     </div>
     <div class="bottom-links">
-        <li class="bottom-items">
-            <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-        </li>
-        <li class="bottom-items">
-            <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-        </li>
         <li class="bottom-items">
             <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
         </li>
@@ -89,18 +80,15 @@
                             <td>@student.FullName</td>
                             <td>@student.AcademicYear</td>
                             <td>
-                                <button class="action-button view-full-details-button"
-                                        data-regno="@student.StudentID"
-                                        data-name="@student.FullName"
-                                        data-year="@student.AcademicYear">
-                                    View
-                                </button>
-                            </td> <!-- Current Semester: optional or not stored -->
-                            <td>
                                 <button class="action-button view-details-button"
                                         data-regno="@student.StudentID"
                                         data-name="@student.FullName"
-                                        data-year="@student.AcademicYear">View
+                                        data-year="@student.AcademicYear"> View
+                                </button>
+                            </td>
+                            <td>
+                                <button class="action-button view-full-details-button" id="popupButton">
+                                    Full details
                                 </button>
                             </td>
                         </tr>
@@ -111,70 +99,47 @@
         </div>
     </div>
     </div>
-    <!-- The Modal for Registration Details -->
-    <div id="registrationModal" class="modal">
+
+    <!-- View details -->
+    <div id="popup" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Registration Details</h2>
-
-            <!-- Student Information Section -->
+            <h2>Student Details</h2>
             <div class="student-info">
-                <div>
-                    <span class="student-info-item">Student ID:</span>
-                    <span class="student-info-value" id="modal-regno">-</span>
-                </div>
-                <div>
-                    <span class="student-info-item">Name:</span>
-                    <span class="student-info-value" id="modal-name">-</span>
-                </div>
-                <div>
-                    <span class="student-info-item">Academic Year:</span>
-                    <span class="student-info-value" id="modal-year">-</span>
-                </div>
-                <div>
-                    <span class="student-info-item">Current Semester:</span>
-                    <span class="student-info-value" id="modal-semester">-</span>
-                </div>
+                <p><strong class="student-info-item">Name:</strong> <span class="student-info-value" id="studentName">John Doe</span></p>
+                <p><strong class="student-info-item">Reg No:</strong> <span class="student-info-value" id="studentRegNo">123456</span></p>
+                <p><strong class="student-info-item">Email:</strong> <span class="student-info-value" id="studentEmail">john@example.com</span></p>
             </div>
-
-            <!-- Filter Section -->
             <div class="filter-section">
-                <label for="semesterFilter"><strong>Filter by Semester:</strong></label>
-                <select id="semesterFilter" onchange="filterCourses()">
+                <label for="semesterFilter">Filter by Semester:</label>
+                <select id="semesterFilter">
                     <option value="all">All</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <!-- Add more semesters as needed -->
                 </select>
-
             </div>
-            <!-- Course Registration Table -->
             <div class="table-container">
-                <table>
+                <table id="coursesTable">
                     <thead>
                         <tr>
-                            <th>Course Code</th>
-                            <th>Credits</th>
-                            <th>Coordinator</th>
-                            <th>Pre-requisites</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>Course Name</th>
+                            <th>Semester</th>
+                            <th>In-Course Marks</th>
+                            <th>End Marks</th>
+                            <th>Grade</th>
                         </tr>
                     </thead>
-                    <tbody id="courseTable">
+                    <tbody id="coursesBody">
+                        <!-- Courses will be populated here -->
                     </tbody>
                 </table>
             </div>
-
-            <!-- Total Credits Display -->
-            <div class="total-credits">
-                Total Credits: <span id="totalCredits">21</span> / 24
-            </div>
-
-            <!-- Submit Button -->
-            <button class="submit-btn" id="submitApprovalBtn">Submit All Approvals</button>
         </div>
     </div>
 
-
-    <!-- The Modal for Full Details -->
+    <!-- The Modal for Registration Details -->
     <div id="registrationModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -238,6 +203,69 @@
     </div>
 
     <script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+            const popupButton = document.getElementById('popupButton');
+            const popup = document.getElementById('popup');
+            const closeButton = document.querySelector('.close');
+            const semesterFilter = document.getElementById('semesterFilter');
+            const coursesBody = document.getElementById('coursesBody');
+
+            // Dummy data for courses
+            const coursesData = [
+                { courseName: 'Mathematics', semester: 1, inCourseMarks: 30, endMarks: 40, totalResults: 70 },
+                { courseName: 'Science', semester: 1, inCourseMarks: 20, endMarks: 30, totalResults: 50 },
+                { courseName: 'History', semester: 2, inCourseMarks: 35, endMarks: 40, totalResults: 75 },
+                { courseName: 'English', semester: 2, inCourseMarks: 25, endMarks: 35, totalResults: 60 },
+                { courseName: 'Geography', semester: 3, inCourseMarks: 30, endMarks: 40, totalResults: 70 },
+                { courseName: 'Physics', semester: 3, inCourseMarks: 20, endMarks: 30, totalResults: 50 },
+            ];
+
+            // Function to calculate grade based on total results
+            function calculateGrade(totalResults) {
+                if (totalResults >= 90) return 'A';
+                if (totalResults >= 80) return 'B+';
+                if (totalResults >= 70) return 'B';
+                if (totalResults >= 60) return 'C';
+                if (totalResults >= 50) return 'C-';
+                return 'F';
+            }
+
+            // Function to populate courses table
+            function populateCoursesTable(filterSemester = 'all') {
+                coursesBody.innerHTML = '';
+                coursesData.forEach(course => {
+                    if (filterSemester === 'all' || course.semester === parseInt(filterSemester)) {
+                        const row = document.createElement('tr');
+                        const grade = calculateGrade(course.totalResults);
+                        row.innerHTML = `
+                            <td>${course.courseName}</td>
+                            <td>${course.semester}</td>
+                            <td class="${course.inCourseMarks < 35 ? 'red' : ''}">${course.inCourseMarks}</td>
+                            <td class="${course.endMarks < 35 ? 'red' : ''}">${course.endMarks}</td>
+                            <td class="${grade === 'F' || grade === 'C-' ? 'red' : ''}">${grade}</td>
+                        `;
+                        coursesBody.appendChild(row);
+                    }
+                });
+            }
+
+            // Show popup when button is clicked
+            popupButton.onclick = function() {
+                popup.style.display = "block";
+                populateCoursesTable();
+            }
+
+            // Close popup when close button is clicked
+            closeButton.onclick = function() {
+                popup.style.display = "none";
+            }
+
+            // Filter courses by semester
+            semesterFilter.onchange = function() {
+                populateCoursesTable(this.value);
+            }
+        });
                 // Function to update time
                 function updateTime() {
                     const currentDate = new Date();
@@ -417,18 +445,6 @@
                     // Event listener for the view details buttons
                     tableBody.addEventListener("click", function(event) {
                         const button = event.target.closest(".view-details-button");
-                        if (button) {
-                            const regno = button.getAttribute("data-regno");
-                            const name = button.getAttribute("data-name");
-                            const year = button.getAttribute("data-year");
-                            const semester = button.getAttribute("data-semester");
-                            openRegistrationModal(regno, name, year, semester);
-                        }
-                    });
-
-                    // Event listener for the view details buttons
-                    tableBody.addEventListener("click", function(event) {
-                        const button = event.target.closest(".view-full-details-button");
                         if (button) {
                             const regno = button.getAttribute("data-regno");
                             const name = button.getAttribute("data-name");

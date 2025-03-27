@@ -202,7 +202,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
         public async Task<IActionResult> ResultPage()
         {
             string studentEmail = User.Identity.Name;
-   
+
             var student = await _context.Students
                 .Include(s => s.Department)
                 .Include(s => s.Advisor)
@@ -290,6 +290,11 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Student/RegisterNewCourse.cshtml");
         }
 
+        public IActionResult FAQs()
+        {
+            return View("~/Views/Dashboard/Student/FAQs.cshtml");
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> SubmitCourseRegistration([FromBody] List<string> selectedCourses)
@@ -308,7 +313,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return NotFound(new { message = "Student not found." });
             }
 
-            Console.WriteLine($"✅ Student {student.StudentID} is registering for {selectedCourses.Count} courses.");
+            Console.WriteLine($" Student {student.StudentID} is registering for {selectedCourses.Count} courses.");
 
             var validCourses = await _context.RegistrationSessionCourses
                 .Where(rsc => selectedCourses.Contains(rsc.CourseCode) &&
@@ -323,7 +328,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return BadRequest(new { message = "Selected courses are not part of the current session." });
             }
 
-            // ✅ Check for duplicates
+            //  Check for duplicates
             var existingRegistrations = await _context.PendingRegistrations
                 .Where(pr => pr.StudentID == student.StudentID && selectedCourses.Contains(pr.CourseCode))
                 .Select(pr => new { pr.CourseCode, pr.SessionID })
@@ -338,18 +343,18 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return BadRequest(new { message = "All selected courses have already been submitted for registration." });
             }
 
-            // ✅ Fetch prerequisites
+            //  Fetch prerequisites
             var prerequisites = await _context.HasPrerequisites
                 .Where(p => selectedCourses.Contains(p.CourseCode))
                 .ToListAsync();
 
-            // ✅ Fetch student results
+            //  Fetch student results
             var studentResults = await _context.Results
                 .Where(r => r.StudentID == student.StudentID)
                 .Include(r => r.CourseOffering)
                 .ToListAsync();
 
-            // ✅ Check if any prerequisites are failed
+            //  Check if any prerequisites are failed
             List<string> failedPrereqCourses = new List<string>();
 
             foreach (var prereq in prerequisites)
@@ -376,10 +381,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 });
             }
 
-            // ✅ Fetch attempts
+            //  Fetch attempts
             var availableCourses = await GetAvailableCoursesList(student.StudentID);
 
-            // ✅ Proceed to registration
+            //  Proceed to registration
             var pendingRegistrations = newCourses.Select(course => new PendingRegistration
             {
                 SessionID = course.SessionID,
@@ -394,7 +399,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
             _context.PendingRegistrations.AddRange(pendingRegistrations);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine($"✅ {pendingRegistrations.Count} courses submitted for student {student.StudentID}.");
+            Console.WriteLine($" {pendingRegistrations.Count} courses submitted for student {student.StudentID}.");
 
             return Ok(new { message = "Course registration submitted successfully!" });
         }
@@ -477,9 +482,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
             public string Coordinator { get; set; }
             public int Attempt { get; set; }
         }
-
-
-
 
 
 

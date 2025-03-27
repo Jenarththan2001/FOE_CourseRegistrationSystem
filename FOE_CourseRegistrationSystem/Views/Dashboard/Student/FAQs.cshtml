@@ -1,0 +1,177 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQs</title>
+    <link rel="stylesheet" href="~/css/FAQs.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+        </div>
+
+        <div class="bottom-links">
+            <li class="bottom-items active">
+                <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="@Url.Action("Login", "Account")"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>FAQs</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img src="~/images/student1.png" alt="Student Profile">
+                </div>
+                <span id="student-id">| 2020CS001</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- FAQs Content -->
+        <div class="dashboard-content faqs-content">
+            <div class="faqs-grid">
+                <div class="faq-column">
+                    <div class="faq-item" data-faq-id="1">
+                        <div class="faq-question">
+                            <h3>When are the registrations closed?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">Registration closes two weeks after the semester starts. Check the academic calendar for the exact date.</div>
+                    </div>
+
+                    <div class="faq-item" data-faq-id="2">
+                        <div class="faq-question">
+                            <h3>Can I register for a course with prerequisites that I haven't completed?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">No, you cannot register for a course if you have not completed its prerequisites. The system will prevent you from doing so.</div>
+                    </div>
+
+                    <div class="faq-item" data-faq-id="3">
+                        <div class="faq-question">
+                            <h3>What should I do if the system crashes while registering?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">If the system crashes, please take a screenshot and contact the IT support team immediately. They can help you resolve any registration issues.</div>
+                    </div>
+                </div>
+
+                <div class="faq-column">
+                    <div class="faq-item" data-faq-id="4">
+                        <div class="faq-question">
+                            <h3>How do I check my registered courses?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">You can view your registered courses by logging into the student portal and navigating to the "Registered Courses" section.</div>
+                    </div>
+
+                    <div class="faq-item" data-faq-id="5">
+                        <div class="faq-question">
+                            <h3>How do I know if my registration was successful?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">You can check the "Registered Courses" section on the student portal.</div>
+                    </div>
+
+                    <div class="faq-item" data-faq-id="6">
+                        <div class="faq-question">
+                            <h3>Can I change my registered courses after the deadline?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">No, changes to registered courses are not allowed after the registration deadline. Make sure to finalize your courses before the deadline.</div>
+                    </div>
+                </div>
+                <div class="faq-column">
+                    <div class="faq-item" data-faq-id="7">
+                        <div class="faq-question">
+                            <h3>Who should I contact if I need help with registration?</h3>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">For any registration-related issues, please contact the academic advising department or the registrar's office. Their contact information is available on the university website.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // JavaScript to toggle the answer visibility and close others
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                const answer = item.querySelector('.faq-answer');
+                const icon = item.querySelector('.faq-question i');
+                const faqId = item.dataset.faqId; // Get the FAQ ID from the data attribute
+
+                question.addEventListener('click', () => {
+                    // Check if the current item is already active
+                    const isActive = answer.classList.contains('active');
+
+                    // Close all other FAQ items
+                    faqItems.forEach(otherItem => {
+                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        const otherIcon = otherItem.querySelector('.faq-question i');
+
+                        if (otherItem !== item && otherAnswer.classList.contains('active')) {
+                            otherAnswer.classList.remove('active');
+                            otherIcon.classList.remove('fa-minus');
+                            otherIcon.classList.add('fa-plus');
+                        }
+                    });
+
+                    // Toggle the current item only if it was not active before
+                    if (!isActive) {
+                        answer.classList.add('active');
+                        icon.classList.remove('fa-plus');
+                        icon.classList.add('fa-minus');
+                    } else {
+                         answer.classList.remove('active');
+                         icon.classList.remove('fa-minus');
+                         icon.classList.add('fa-plus');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

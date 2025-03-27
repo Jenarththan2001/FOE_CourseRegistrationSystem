@@ -155,11 +155,13 @@ body {
 /* Dashboard Content Styles */
 .dashboard-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     grid-template-areas:
-        "total-users registered-students active-courses"
-        "system-logs system-logs notifications";
+        "personal-details total-users"
+        "personal-details registered-students"
+        "personal-details active-courses"
+        "notifications system-logs";
 }
 
 .card {
@@ -268,3 +270,25 @@ body {
             "notifications";
     }
 }
+
+.personal-details {
+    grid-area: personal-details;
+    background-color: #fff;
+    border-left: 5px solid var(--primary-color);
+}
+
+    .personal-details h2 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+
+.details-content p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+    .details-content p span {
+        font-weight: 600;
+    }

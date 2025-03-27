@@ -37,12 +37,6 @@
         </div>
         <div class="bottom-links">
             <li class="bottom-items">
-                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-            </li>
-            <li class="bottom-items">
-                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-            </li>
-            <li class="bottom-items">
                 <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
             </li>
         </div>
@@ -75,10 +69,10 @@
                     <label for="semester">Semester</label>
                     <select id="semester">
                         <option value="">Select Semester</option>
-                        @for (int i = 1; i <= 8; i++)
-                        {
+                            @for (int i = 1; i <= 8; i++)
+                            {
                             <option value="@i">Semester @i</option>
-                        }
+                            }
                     </select>
                 </div>
 
@@ -86,20 +80,20 @@
                     <label for="department">Department</label>
                     <select id="department">
                         <option value="general">General Program</option>
-                        @foreach (var dept in ViewBag.Departments)
-                        {
+                            @foreach (var dept in ViewBag.Departments)
+                            {
                             <option value="@dept.DepartmentID">@dept.DepartmentName</option>
-                        }
+                            }
                     </select>
                 </div>
 
                 <div class="filter-group">
                     <label for="academic-year">Academic Year</label>
                     <select id="academic-year" multiple>
-                        @foreach (var year in ViewBag.AcademicYears)
-                        {
+                            @foreach (var year in ViewBag.AcademicYears)
+                            {
                             <option value="@year">@year</option>
-                        }
+                            }
                     </select>
                     <small>Hold CTRL to select multiple years</small>
                 </div>
@@ -138,7 +132,7 @@
             <div class="action-buttons">
                 <button class="btn btn-primary" id="confirmRegistration">Confirm Registration</button>
             </div>
-            
+
         </div>
     </div>
     </div>
@@ -231,7 +225,7 @@
         $("#confirmRegistration").click(function () {
             let selectedCourses = [];
             $("#previewTableBody tr").each(function () {
-                let courseCode = $(this).find("td:eq(0)").text().trim(); // Get Course Code
+                let courseCode = $(this).find("td:eq(0)").text().trim(); Get Course Code
                 selectedCourses.push(courseCode);
             });
 

@@ -267,6 +267,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Admin/AdvisorDetails.cshtml");
         }
 
+        
+
         /// <summary>
         /// Loads Old Registration History Page
         /// </summary>

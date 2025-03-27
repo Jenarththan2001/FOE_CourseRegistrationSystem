@@ -21,7 +21,6 @@
                 <h1>Welcome to Faculty course Registration System</h1>
                 <p>Faculty of Engineering, University of Jaffna.</p>
                 <p>Join us to experience the best Course registration system!</p>
-                <button class="signup-btn" onclick="location.href='@Url.Action("Register", "Account")'">Sign Up</button>
             </div>
         </div>
 
@@ -47,10 +46,6 @@
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
-                    <!-- Forgot Password Link -->
-                    <div class="forgot-password">
-                        <a asp-action="ForgotPassword" asp-controller="Account">Forgot Password?</a>
-                    </div>
 
                     <!-- Login Button -->
                     <button type="submit" class="login-btn">Login</button>

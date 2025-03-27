@@ -11,10 +11,10 @@
     box-shadow: none;
 }
 
-.filter-section:hover {
-    box-shadow: none;
-    transform:none;
-}
+    .filter-section:hover {
+        box-shadow: none;
+        transform: none;
+    }
 
 .filter-container {
     display: flex;
@@ -92,11 +92,10 @@
     padding: 20px;
 }
 
-.advisor-table:hover {
-    transform:none;
-    box-shadow:none;
-
-}
+    .advisor-table:hover {
+        transform: none;
+        box-shadow: none;
+    }
 
     .advisor-table h2 {
         color: var(--primary-color);
