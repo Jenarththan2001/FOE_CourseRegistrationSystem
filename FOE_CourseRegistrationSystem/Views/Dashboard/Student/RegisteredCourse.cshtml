@@ -66,10 +66,13 @@
                 </div>
             </div>
 
+            <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+
             <!-- Filter Section -->
             <div class="filter-section">
+            <label for="semesterFilter">Filter by Semester</label>
                 <select id="semesterFilter">
-                    <option value="">Filter by Semester</option>
+                    <option value="">All Semester</option>
                     @foreach (var semester in registeredCourses.Select(c => c.CourseOffering.Semester)
                                    .Concat(pendingRegistrations.Select(p => p.RegistrationSessionCourse?.Course?.Semester))
                                    .Where(s => !string.IsNullOrEmpty(s))
@@ -110,7 +113,7 @@
                                     <td>@semester</td> <!-- ✅ Display Semester -->
                                     <td>@prerequisiteText</td>
                                     <td class="status-approved">
-                                        <i class="fas fa-check-circle"></i> Registered
+                                        <i class="fas fa-check-circle"></i> 
                                     </td>
                                 </tr>
                         }
@@ -142,10 +145,24 @@
                     </tbody>
                 </table>
             </div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing <span id="start-record">1</span> to <span id="end-record">10</span> of <span id="total-records">0</span> entries
+            </div>
+            <div class="pagination-controls">
+                <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                <div id="page-numbers" class="page-numbers"></div>
+                <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
         </div>
     </div>
 
   <script>
+              function goBack() {
+           window.history.back();
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const semesterFilter = document.getElementById("semesterFilter");
             const courseTableBody = document.getElementById("courseTableBody");

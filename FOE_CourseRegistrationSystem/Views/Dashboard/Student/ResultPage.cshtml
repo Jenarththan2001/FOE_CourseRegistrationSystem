@@ -71,7 +71,7 @@
                 <div class="filter-section card">
                     <div class="filter-container">
                         <div class="semester-filter">
-                            <label for="semester-select">Semester:</label>
+                            <label for="semester-select">Semester</label>
                             <select id="semester-select">
                                 <option value="all">All Semesters</option>
                                 @for (int i = 1; i <= 8; i++)
@@ -108,10 +108,7 @@
                                             <div class="course-details">
                                                 <p class="course-name">@result.CourseOffering.Course.CourseName</p>
                                                 <div class="result-details">
-                                                    <div class="detail-item">
-                                                        <span class="detail-label">Final Marks</span>
-                                                        <span class="detail-value">@finalMarks.ToString("0.0")</span> <!-- ✅ Display Average -->
-                                                    </div>
+                                                    
                                                     <div class="detail-item">
                                                         <span class="detail-label">Result</span>
                                                         <span class="detail-value">@result.Grade</span>
