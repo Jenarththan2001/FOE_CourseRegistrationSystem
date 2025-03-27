@@ -40,12 +40,6 @@
 
                 <div class="bottom-links">
                     <li class="bottom-items">
-                        <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-                    </li>
-                    <li class="bottom-items">
-                        <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-                    </li>
-                    <li class="bottom-items">
                         <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
                     </li>
                 </div>
@@ -66,16 +60,19 @@
                 </div>
             </div>
 
+            <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+
             <!-- Filter Section -->
             <div class="filter-section">
+            <label for="semesterFilter">Filter by Semester</label>
                 <select id="semesterFilter">
-                    <option value="">Filter by Semester</option>
+                    <option value="">All Semester</option>
                     @foreach (var semester in registeredCourses.Select(c => c.CourseOffering.Semester)
-                                   .Concat(pendingRegistrations.Select(p => p.RegistrationSessionCourse?.Course?.Semester))
-                                   .Where(s => !string.IsNullOrEmpty(s))
-                                   .Distinct())
+                                  .Concat(pendingRegistrations.Select(p => p.RegistrationSessionCourse?.Course?.Semester))
+                                  .Where(s => !string.IsNullOrEmpty(s))
+                                  .Distinct())
                     {
-                            <option value="@semester">Semester @semester</option>
+                                <option value="@semester">Semester @semester</option>
                     }
                 </select>
             </div>
@@ -103,16 +100,16 @@
                                 ? string.Join(", ", coursePrerequisites[courseCode])
                                 : "None";
 
-                                <tr data-semester="@semester">
-                                    <td>@courseCode</td>
-                                    <td>@registration.CourseOffering.Course.CourseName</td>
-                                    <td>@registration.CourseOffering.Course.Credit</td>
-                                    <td>@semester</td> <!-- ✅ Display Semester -->
-                                    <td>@prerequisiteText</td>
-                                    <td class="status-approved">
-                                        <i class="fas fa-check-circle"></i> Registered
-                                    </td>
-                                </tr>
+                                    <tr data-semester="@semester">
+                                        <td>@courseCode</td>
+                                        <td>@registration.CourseOffering.Course.CourseName</td>
+                                        <td>@registration.CourseOffering.Course.Credit</td>
+                                        <td>@semester</td> <!-- ✅ Display Semester -->
+                                        <td>@prerequisiteText</td>
+                                        <td class="status-approved">
+                                            <i class="fas fa-check-circle"></i> 
+                                        </td>
+                                    </tr>
                         }
 
                         <!-- ✅ Pending & Rejected Courses -->
@@ -122,30 +119,44 @@
                             string courseName = pending.RegistrationSessionCourse?.Course?.CourseName ?? "N/A";
                             string credit = pending.RegistrationSessionCourse?.Course?.Credit.ToString() ?? "N/A";
                             string semester = pending.RegistrationSessionCourse?.Course?.Semester ?? "N/A";
-                            <!-- ✅ Fetch Semester -->
+                                <!-- ✅ Fetch Semester -->
                             string prerequisiteText = coursePrerequisites.ContainsKey(courseCode)
                                 ? string.Join(", ", coursePrerequisites[courseCode])
                                 : "None";
 
-                                <tr data-semester="@semester">
-                                    <td>@courseCode</td>
-                                    <td>@courseName</td>
-                                    <td>@credit</td>
-                                    <td>@semester</td> <!-- ✅ Display Semester -->
-                                    <td>@prerequisiteText</td>
-                                    <td class="@(pending.Status == "Rejected" ? "status-rejected" : "status-pending")">
-                                        <i class="fas @(pending.Status == "Rejected" ? "fa-times-circle" : "fa-hourglass-half")"></i>
+                                    <tr data-semester="@semester">
+                                        <td>@courseCode</td>
+                                        <td>@courseName</td>
+                                        <td>@credit</td>
+                                        <td>@semester</td> <!-- ✅ Display Semester -->
+                                        <td>@prerequisiteText</td>
+                                        <td class="@(pending.Status == "Rejected" ? "status-rejected" : "status-pending")">
+                                            <i class="fas @(pending.Status == "Rejected" ? "fa-times-circle" : "fa-hourglass-half")"></i>
                                     @pending.Status
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                         }
                     </tbody>
                 </table>
             </div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing <span id="start-record">1</span> to <span id="end-record">10</span> of <span id="total-records">0</span> entries
+            </div>
+            <div class="pagination-controls">
+                <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                <div id="page-numbers" class="page-numbers"></div>
+                <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
         </div>
     </div>
 
   <script>
+              function goBack() {
+           window.history.back();
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const semesterFilter = document.getElementById("semesterFilter");
             const courseTableBody = document.getElementById("courseTableBody");
