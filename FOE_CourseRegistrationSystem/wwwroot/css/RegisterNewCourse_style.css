@@ -112,6 +112,20 @@ body {
     .header h1 {
         color: var(--primary-color);
     }
+.back-btn {
+    color: var(--primary-color);
+    background-color: transparent;
+    border: none;
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+    margin-top: -20px;
+}
 
 /* Filter Section */
 .filter-section {
@@ -283,5 +297,7 @@ tbody tr:hover {
     table {
         width: 100%;
     }
-}body {
+}
+
+body {
 }

@@ -35,15 +35,9 @@
                 <li class="active">
                     <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
                 </li>
-            
+
 
             <div class="bottom-links">
-                <li class="bottom-items">
-                    <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-                </li>
-                <li class="bottom-items">
-                    <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-                </li>
                 <li class="bottom-items">
                     <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
                 </li>
@@ -71,12 +65,12 @@
                 <div class="filter-section card">
                     <div class="filter-container">
                         <div class="semester-filter">
-                            <label for="semester-select">Semester:</label>
+                            <label for="semester-select">Semester</label>
                             <select id="semester-select">
                                 <option value="all">All Semesters</option>
                                 @for (int i = 1; i <= 8; i++)
                                 {
-                                        <option value="@i">Semester @i</option>
+                                            <option value="@i">Semester @i</option>
                                 }
                             </select>
                         </div>
@@ -100,36 +94,33 @@
                                 // ✅ Fail if finalMarks < 50
                                 bool isFail = finalMarks < 50;
 
-                                        <div class="result-card @(isFail ? "fail" : "pass")">
-                                            <div class="course-header">
-                                                <h3>@result.CourseOffering.Course.CourseCode</h3>
-                                                <span class="semester-badge">Semester @result.CourseOffering.Semester</span>
-                                            </div>
-                                            <div class="course-details">
-                                                <p class="course-name">@result.CourseOffering.Course.CourseName</p>
-                                                <div class="result-details">
-                                                    <div class="detail-item">
-                                                        <span class="detail-label">Final Marks</span>
-                                                        <span class="detail-value">@finalMarks.ToString("0.0")</span> <!-- ✅ Display Average -->
+                                                <div class="result-card @(isFail ? "fail" : "pass")">
+                                                    <div class="course-header">
+                                                        <h3>@result.CourseOffering.Course.CourseCode</h3>
+                                                        <span class="semester-badge">Semester @result.CourseOffering.Semester</span>
                                                     </div>
-                                                    <div class="detail-item">
-                                                        <span class="detail-label">Result</span>
-                                                        <span class="detail-value">@result.Grade</span>
-                                                    </div>
-                                                    <div class="detail-item">
-                                                        <span class="detail-label">Status</span>
-                                                        <span class="detail-value status-@(isFail ? "fail" : "pass")">
+                                                    <div class="course-details">
+                                                        <p class="course-name">@result.CourseOffering.Course.CourseName</p>
+                                                        <div class="result-details">
+
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Result</span>
+                                                                <span class="detail-value">@result.Grade</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Status</span>
+                                                                <span class="detail-value status-@(isFail ? "fail" : "pass")">
                                                     @(isFail ? "Fail" : "Pass")
-                                                        </span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
                             }
                         }
                         else
                         {
-                                <p class="no-results">No results found.</p>
+                                    <p class="no-results">No results found.</p>
                         }
                     </div>
                 </div>
