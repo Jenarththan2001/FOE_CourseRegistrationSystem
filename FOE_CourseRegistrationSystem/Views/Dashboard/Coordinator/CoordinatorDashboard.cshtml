@@ -1,0 +1,78 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adviser Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="logo">
+        <span>FOE UOJ</span>
+    </div>
+    <ul class="nav-links">
+        <div class="top-links">
+            <li class="active">
+                <a href="@Url.Action("CoordinatorDashboard", "Coordinator")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            </li>
+            <li>
+                <a href="@Url.Action("CoordinatingCourses", "Coordinator")"><i class="fas fa-book"></i><span>Coordinating Courses</span></a>
+            </li>
+        </div>
+    <div class="bottom-links">
+        <li class="bottom-items">
+            <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </li>
+        <li class="bottom-items">
+            <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </li>
+        <li class="bottom-items">
+            <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+        </li>
+    </div>
+    </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Advisor Dashboard</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">| Admin: John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+
+    </script>
+</body>
+
+</html>

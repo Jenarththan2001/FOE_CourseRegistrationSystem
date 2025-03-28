@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -14,14 +16,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly PasswordHasher<Student> _studentPasswordHasher;
-        private readonly PasswordHasher<Staff> _staffPasswordHasher;
 
         public AccountController(ApplicationDbContext context)
         {
             _context = context;
-            _studentPasswordHasher = new PasswordHasher<Student>();
-            _staffPasswordHasher = new PasswordHasher<Staff>();
         }
 
         [HttpGet]
@@ -31,7 +29,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             Console.WriteLine($"🔹 Received Email: {model.Email}");
-            Console.WriteLine($"🔹 Received Password: {model.Password}");
 
             if (!ModelState.IsValid)
             {
@@ -39,63 +36,42 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return View(model);
             }
 
-            var student = await _context.Students
-                .Where(s => s.Email == model.Email && s.Password != null)  // ✅ Prevent NULL Errors
-                .FirstOrDefaultAsync();
-
-            var staff = await _context.Staffs
-                .Where(s => s.Email == model.Email && s.Password != null)  // ✅ Prevent NULL Errors
-                .FirstOrDefaultAsync();
-
-            if (student != null)
+            try
             {
-                Console.WriteLine($"✅ Found Student: {student.Email}");
+                // 🔹 Validate student login
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Email == model.Email && s.Password == model.Password);
 
-                if (!string.IsNullOrEmpty(student.Password) && student.Password == model.Password)
+                if (student != null)
                 {
-                    await SignInUser(student.Email, "Student");
-                    return RedirectToAction("StudentDashboard", "Dashboard");
+                    await SignInUser(student.Email, "Student", student.StudentID);
+                    return RedirectToAction("Dashboard", "Student");
                 }
-                else
-                {
-                    Console.WriteLine("❌ Student Password Verification Failed");
-                }
-            }
-            else
-            {
-                Console.WriteLine("❌ Student Not Found");
-            }
 
-            if (staff != null)
-            {
-                Console.WriteLine($"✅ Found Staff: {staff.Email}");
+                // 🔹 Validate staff login
+                var staff = await _context.Staffs
+                    .FirstOrDefaultAsync(st => st.Email == model.Email && st.Password == model.Password);
 
-                if (!string.IsNullOrEmpty(staff.Password) && staff.Password == model.Password)
+                if (staff != null)
                 {
-                    Console.WriteLine($"✅ Staff Verified");
-                    if (staff.Role == "Adviser")
+                    string roleName = staff.Role.ToString(); // No manual renaming
+                    await SignInUser(staff.Email, roleName, staff.StaffID);
+
+                    return roleName switch
                     {
-                        await SignInUser(staff.Email, "Adviser");
-                        Console.WriteLine("🔹 Redirecting to AdviserDashboard...");
-                        return RedirectToAction("AdviserDashboard", "Dashboard");
-                    }
+                        "Advisor" => RedirectToAction("AdviserDashboard", "Advisor"),
+                        "AR" => RedirectToAction("AdminDashboard", "Admin"),
+                        "Coordinator" => RedirectToAction("CoordinatorDashboard", "Coordinator"),
+                        _ => RedirectToAction("Login", "Account"),
+                    };
 
-                    else if (staff.Role == "AR")
-                    {
-                        await SignInUser(staff.Email, "AR");
-                        Console.WriteLine("🔹 Redirecting to AdminDashboard...");
-                        return RedirectToAction("AdminDashboard", "Dashboard");
-                    }
-
-                }
-                else
-                {
-                    Console.WriteLine("❌ Staff Password Verification Failed");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("❌ Staff Not Found");
+                Console.WriteLine($"❌ Exception during login: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred during login. Please try again.");
+                return View(model);
             }
 
             Console.WriteLine("❌ Login Failed");
@@ -103,14 +79,13 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View(model);
         }
 
-
-
-        private async Task SignInUser(string email, string role)
+        private async Task SignInUser(string email, string role, int userId)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, email),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Name, email ?? ""),
+                new Claim(ClaimTypes.Role, role),
+                new Claim("UserId", userId.ToString())
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -122,6 +97,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
+            Console.WriteLine($"✔️ Logging in with role: {role}");
+
         }
 
         [HttpPost]

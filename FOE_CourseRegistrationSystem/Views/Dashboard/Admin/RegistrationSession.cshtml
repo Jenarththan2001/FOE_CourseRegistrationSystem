@@ -1,0 +1,368 @@
+﻿@{
+    ViewBag.Title = "Manage Registrations";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Sessions</title>
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="~/css/RegistrationSession_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery -->
+
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                </li>
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">| Admin: John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+
+        <div class="content-section">
+
+            <div class="filter-section">
+                <div class="filter-container">
+                    <div class="semester-filter">
+                        <label for="semester-select">Semester:</label>
+                        <select id="semester-select">
+                            <option value="">All Semesters</option>
+                            <option value="Fall">Fall</option>
+                            <option value="Spring">Spring</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search by department...">
+                        <button id="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section ">
+                <h2>Registration Sessions</h2>
+                <div class="table-container">
+                    <!-- Cards will be generated here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Original table that will be hidden and used as data source -->
+            <table id="sessionTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Academic Year</th>
+                        <th>Semester</th>
+                        <th>Department</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Courses</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- This will be populated by AJAX -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal for editing session -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <h3>Edit Registration Session</h3>
+                <input type="hidden" id="sessionId">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate">
+                <label for="status">Status:</label>
+                <select id="status">
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                </select>
+                <div>
+                    <button class="save-btn" onclick="saveChanges()">Save</button>
+                    <button class="close-btn" onclick="deleteSession()">Delete</button>
+                    <button class="close-btn" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function goBack() {
+           window.history.back();
+        }
+
+        $(document).ready(function() {
+            fetchRegistrationSessions();
+
+            // Update current date and time
+            setInterval(function() {
+                const now = new Date();
+                $("#current-date").text(now.toLocaleDateString());
+                $("#current-time").text(now.toLocaleTimeString());
+            }, 1000);
+
+            // Filter by semester
+            $("#semester-select").change(function() {
+                filterSessions();
+            });
+
+            // Search functionality
+            $("#search-btn").click(function() {
+                filterSessions();
+            });
+
+            $("#search-input").keyup(function(e) {
+                if (e.keyCode === 13) {
+                    filterSessions();
+                }
+            });
+        });
+
+        function fetchRegistrationSessions() {
+            $.ajax({
+                url: '@Url.Action("GetRegistrationSessions", "Admin")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (sessions) {
+                    let tableBody = $("#sessionTable tbody");
+                    tableBody.empty();
+                    sessions.forEach(session => {
+                        let courseList = "<ul>";
+                        session.courses.forEach(course => {
+                            courseList += `<li>${course}</li>`;
+                        });
+                        courseList += "</ul>";
+
+                        let isClosed = session.status === "Closed";
+                        let exportButton = `<button class="export-btn" ${isClosed ? "" : "disabled"} onclick="exportSession(${session.sessionID})">Export</button>`;
+
+                        tableBody.append(`
+                            <tr>
+                                <td>${session.sessionID}</td>
+                                <td>${session.academicYear}</td>
+                                <td>${session.semester}</td>
+                                <td>${session.departmentName}</td>
+                                <td>${new Date(session.startDate).toLocaleDateString()}</td>
+                                <td>${new Date(session.endDate).toLocaleDateString()}</td>
+                                <td>${session.status}</td>
+                                <td>${courseList}</td>
+                                <td>
+                                    <button class="edit-btn" onclick="openModal(${session.sessionID}, '${session.endDate}', '${session.status}')">Edit</button>
+                                    ${exportButton}
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    // Transform table to cards
+                    transformTableToCards();
+                },
+                error: function () {
+                    console.error("Failed to fetch registration sessions.");
+                }
+            });
+        }
+
+        function transformTableToCards() {
+            const sessions = [];
+
+            // Get all rows except header
+            $("#sessionTable tbody tr").each(function() {
+                const cells = $(this).find("td");
+
+                const session = {
+                    id: $(cells[0]).text(),
+                    academicYear: $(cells[1]).text(),
+                    semester: $(cells[2]).text(),
+                    department: $(cells[3]).text(),
+                    startDate: $(cells[4]).text(),
+                    endDate: $(cells[5]).text(),
+                    status: $(cells[6]).text(),
+                    courses: $(cells[7]).html(),
+                    actions: $(cells[8]).html()
+                };
+
+                sessions.push(session);
+            });
+
+            // Clear the table container and create cards
+            $(".table-container").empty();
+
+            sessions.forEach(session => {
+                const statusClass = session.status.toLowerCase();
+
+                const cardHtml = `
+                    <div class="session-card ${statusClass}">
+                        <div class="session-header">
+                            <h3>Session ${session.id}</h3>
+                            <span class="status-badge ${statusClass}">${session.status}</span>
+                        </div>
+                        <div class="session-details">
+                            <div class="session-info">
+                                <div class="info-item">
+                                    <span class="info-label">Academic Year</span>
+                                    <span class="info-value">${session.academicYear}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Semester</span>
+                                    <span class="info-value">${session.semester}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Department</span>
+                                    <span class="info-value">${session.department}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Start Date</span>
+                                    <span class="info-value">${session.startDate}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">End Date</span>
+                                    <span class="info-value">${session.endDate}</span>
+                                </div>
+                            </div>
+                            <div class="course-list">
+                                <h4>Courses</h4>
+                                ${session.courses}
+                            </div>
+                            <div class="session-actions">
+                                ${session.actions}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $(".table-container").append(cardHtml);
+            });
+        }
+
+        function filterSessions() {
+            const semesterFilter = $("#semester-select").val().toLowerCase();
+            const searchText = $("#search-input").val().toLowerCase();
+
+            $(".session-card").each(function() {
+                const semester = $(this).find(".info-item:nth-child(2) .info-value").text().toLowerCase();
+                const department = $(this).find(".info-item:nth-child(3) .info-value").text().toLowerCase();
+
+                const matchesSemester = semesterFilter === "" || semester === semesterFilter;
+                const matchesSearch = searchText === "" || department.includes(searchText);
+
+                if (matchesSemester && matchesSearch) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        function openModal(sessionID, endDate, status) {
+            $("#sessionId").val(sessionID);
+            $("#endDate").val(new Date(endDate).toISOString().split('T')[0]);
+            $("#status").val(status);
+            $("#editModal").show();
+        }
+
+        function closeModal() {
+            $("#editModal").hide();
+        }
+
+        function saveChanges() {
+            const sessionID = $("#sessionId").val();
+            const newEndDate = $("#endDate").val();
+            const newStatus = $("#status").val();
+
+            $.ajax({
+                url: '@Url.Action("UpdateRegistrationSession", "Admin")',
+                type: 'POST',
+                data: {
+                    sessionID: sessionID,
+                    newEndDate: newEndDate,
+                    newStatus: newStatus
+                },
+                success: function (response) {
+                    alert(response.message);
+                    closeModal();
+                    fetchRegistrationSessions();
+                },
+                error: function () {
+                    alert("Failed to update session.");
+                }
+            });
+        }
+
+                function deleteSession() {
+            let sessionID = $("#sessionId").val();
+
+            if (confirm("Are you sure you want to delete this session?")) {
+                $.ajax({
+                    url: '@Url.Action("DeleteRegistrationSession", "Admin")',
+                    type: 'POST',
+                    data: { sessionID },
+                    success: function (response) {
+                        alert(response.message);
+                        closeModal();
+                        fetchRegistrationSessions();
+                    },
+                    error: function () {
+                        alert("Failed to delete session.");
+                    }
+                });
+            }
+        }
+
+        function exportSession(sessionID) {
+            window.location.href = '@Url.Action("ExportSession", "Admin")' + '?sessionID=' + sessionID;
+        }
+    </script>
+</body>
+</html>

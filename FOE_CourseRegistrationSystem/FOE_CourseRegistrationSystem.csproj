@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="bootstrap" Version="5.3.3" />
+    <PackageReference Include="itextsharp.lgplv2.core" Version="1.7.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,11 +23,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Home\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

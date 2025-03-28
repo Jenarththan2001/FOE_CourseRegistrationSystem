@@ -3,29 +3,43 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FOE_CourseRegistrationSystem.Models
 {
-    [Table("STUDENT")]  // ✅ Map EF model to existing SQL table
     public class Student
     {
         [Key]
-        public int StudentID { get; set; }
+        public int StudentID { get; set; }  // Primary Key
 
         [Required, EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; }  // Unique student email
 
         [Required]
-        [Column("Password")]  // ✅ Match SQL column name exactly
-        public string Password { get; set; }
+        public string Password { get; set; }  // Stored in hashed format
+
+        [Required, StringLength(12)]
+        public string NIC { get; set; }  // National ID of the student
 
         [Required]
-        public string NIC { get; set; }
+        public string FullName { get; set; }  // Full Name
 
-        public string? FullName { get; set; }
-        public string? Nationality { get; set; }
-        public byte[]? Photo { get; set; }
-        public string? TempAddress { get; set; }
-        public string? PermanentAddress { get; set; }
-        public string? Gender { get; set; }
-        public string? PhoneNo { get; set; }
-        public int AcademicYear { get; set; }
+        public string Nationality { get; set; }  // Nationality
+        public string Photo { get; set; } = "default.jpg";  // Profile Picture
+        public string TempAddress { get; set; }  // Temporary Address
+        public string PermanentAddress { get; set; }  // Permanent Address
+        public string Gender { get; set; }  // Gender (Male/Female)
+
+        [Phone]
+        public string PhoneNo { get; set; }  // Contact Number
+
+
+        [Required, StringLength(9)]  // ✅ Change AcademicYear to string
+        public string AcademicYear { get; set; }
+
+        [ForeignKey("Department")]
+        public int DepartmentID { get; set; }  // Foreign Key to Department
+        public Department Department { get; set; }
+
+        [ForeignKey("Advisor")]
+        public int? StaffID { get; set; }  // Advisor (Lecturer) assigned to student
+        public Staff Advisor { get; set; }
     }
+
 }

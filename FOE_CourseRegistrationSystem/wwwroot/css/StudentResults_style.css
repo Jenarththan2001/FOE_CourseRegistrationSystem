@@ -1,0 +1,220 @@
+﻿/* Results Page Specific Styles */
+.results-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Filter Section */
+.filter-section {
+    padding: 15px;
+    box-shadow: none;
+}
+
+    .filter-section:hover {
+        transform: translateY(0px);
+        box-shadow: none;
+    }
+
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.semester-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .semester-filter label {
+        font-weight: 500;
+    }
+
+    .semester-filter select {
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background-color: white;
+        font-size: 14px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.3s;
+    }
+
+        .semester-filter select:focus {
+            border-color: var(--primary-color);
+        }
+
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .search-container input {
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        width: 200px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+        .search-container input:focus {
+            border-color: var(--primary-color);
+        }
+
+    .search-container button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        .search-container button:hover {
+            background-color: #5849c2;
+        }
+
+/* Results Table */
+.results-table {
+    margin-top: 10px;
+    box-shadow: none;
+}
+
+    .results-table:hover {
+        transform: translateY(0px);
+        box-shadow: none;
+    }
+
+    .results-table h2 {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+    }
+
+.results-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.result-card {
+    background-color: white;
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-left: 5px solid var(--primary-color);
+}
+
+    .result-card.pass {
+        border-left-color: var(--chart-green);
+    }
+
+    .result-card.fail {
+        border-left-color: #ff6b6b;
+    }
+
+    .result-card:hover {
+/*        transform: translateY(-5px);*/
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+    .course-header h3 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: 18px;
+    }
+
+.semester-badge {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.course-details {
+    padding: 15px;
+}
+
+.course-name {
+    margin: 0 0 15px 0;
+    font-weight: 500;
+    color: #333;
+}
+
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.detail-value {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.status-pass {
+    color: var(--chart-green);
+}
+
+.status-fail {
+    color: #ff6b6b;
+}
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-container {
+        width: 100%;
+    }
+
+        .search-container input {
+            width: 100%;
+        }
+
+    .results-cards {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,337 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    --primary-color: #6c5ce7;
+    --secondary-color: #a29bfe;
+    --background-color: #f5f6fa;
+    --card-bg-color: #fff;
+    --text-color: #2d3436;
+    --sidebar-width: 240px;
+    --header-height: 60px;
+    --card-border-radius: 10px;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: white;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: width 0.3s ease;
+}
+
+.logo {
+    padding: 20px;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+    .nav-links li {
+        padding: 10px 20px;
+        margin-bottom: 5px;
+        transition: background-color 0.3s;
+    }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+            .nav-links li a i {
+                margin-right: 15px;
+                font-size: 18px;
+            }
+
+        .nav-links li.active {
+            background-color: var(--primary-color);
+            border-radius: 5px;
+        }
+
+            .nav-links li.active a {
+                color: white;
+            }
+
+        .nav-links li:hover {
+            background-color: var(--primary-color);
+            border-radius: 5px;
+        }
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    overflow-y: auto;
+    transition: margin-left 0.3s ease;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+    .header h1 {
+        color: var(--primary-color);
+    }
+
+.back-btn {
+    color: var(--primary-color);
+    background-color: transparent;
+    border: none;
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+    margin-top: -20px;
+}
+
+/* Filter Section */
+.filter-section {
+    background-color: var(--card-bg-color);
+    padding: 15px;
+    border-radius: var(--card-border-radius);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+    .filter-section input, .filter-section select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 200px;
+        outline: none;
+    }
+
+
+/* Course Table */
+.table-container {
+    background-color: var(--card-bg-color);
+    padding: 20px;
+    border-radius: var(--card-border-radius);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    min-width: 120px; /* Ensures columns don't shrink too much */
+}
+
+    th:nth-child(1), td:nth-child(1) {
+        width: 15%;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+        width: 30%;
+    }
+
+    th:nth-child(3), td:nth-child(3) {
+        width: 10%;
+    }
+
+    th:nth-child(4), td:nth-child(4) {
+        width: 20%;
+    }
+
+    th:nth-child(5), td:nth-child(5) {
+        width: 15%;
+    }
+
+    th:nth-child(6), td:nth-child(6) {
+        width: 10%;
+    }
+
+.no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px 0;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .pagination-controls button {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+    .page-numbers button {
+        min-width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+        .page-numbers button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+/* Approval Status */
+.status-approved {
+    text-align: center;
+    color: green;
+    font-weight: 600;
+}
+
+.status-pending {
+    text-align: center;
+    color: orange;
+    font-weight: 600;
+}
+
+.status-rejected {
+    text-align: center;
+    color: red;
+    font-weight: 600;
+}
+
+
+tbody tr:hover {
+    background-color: #f5f6fa;
+}
+
+/* Responsive */
+@media screen and (max-width: 992px) {
+    .filter-section {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-section input, .filter-section select {
+            width: 100%;
+        }
+
+    table {
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+    }
+
+        .sidebar .logo span,
+        .sidebar .nav-links li a span {
+            display: none;
+        }
+
+    .main-content {
+        margin-left: 70px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-links li {
+        padding: 10px;
+        text-align: center;
+    }
+}

@@ -1,0 +1,369 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="~/css/PendingRegistrations_Style.css">
+    <link rel="stylesheet" href="~/css/Advisor_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                </li>
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Pending Registration</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">| Admin: John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+        <!-- Dropdown for Filtering Status -->
+        <div class="filter-section card">
+            <div class="filter-container">
+                <div class="statusFilter">
+                    <label for="statusFilter">Filter by Status</label>
+                    <select id="statusFilter" onchange="filterRegistrations()">
+                        <option value="All">All</option>
+                        <option value="Pending" selected>Pending</option> <!-- ✅ Default Selected -->
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="courseFilter">
+                    <label for="courseFilter">Filter by Course Code</label>
+                    <select id="courseFilter" onchange="filterRegistrations()">
+                        <option value="All">All</option> <!-- ✅ Default -->
+                    </select>
+                </div>
+
+                <div class="semesterFilter">
+                    <label for="semesterFilter">Filter by Semester</label>
+                    <select id="semesterFilter" onchange="filterRegistrations()">
+                        <option value="All">All</option> <!-- ✅ Default -->
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="container-section card">
+            <h2>Pending Registrations</h2>
+            <div class="table-container">
+                <table id="pendingRegistrationsTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Course Code</th>
+                            <th>Closing Date</th>
+                            <th>Status</th>
+                            <th>Registration Date</th>
+                            <th>Attempt</th> <!-- ✅ Added Attempt Column -->
+                            <th>Advisor Approval</th> <!-- ✅ Added Advisor Approval Status -->
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="start-record">1</span> to <span id="end-record">10</span> of <span id="total-records">0</span> entries
+                </div>
+                <div class="pagination-controls">
+                    <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                    <div id="page-numbers" class="page-numbers"></div>
+                    <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            function goBack() {
+                window.history.back();
+            }
+
+            let allRegistrations = [];
+            let currentPage = 1;
+            const recordsPerPage = 10;
+            let filteredData = [];
+
+            function fetchPendingRegistrations() {
+                console.log("🔹 Fetching Pending Registrations...");
+
+                $.ajax({
+                    url: '@Url.Action("GetPendingRegistrations", "Admin")',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (registrations) {
+                        console.log("✅ API Called: GetPendingRegistrations()");
+                        console.log("✅ API Response:", registrations);
+
+                        allRegistrations = registrations; // ✅ Store globally for filtering
+                        filteredData = registrations;
+
+                        // ✅ Populate Course and Semester Filters
+                        populateCourseFilter(registrations);
+                        populateSemesterFilter(registrations);
+
+                        // ✅ Ensure "Pending" is selected & apply filter immediately
+                        $("#statusFilter").val("Pending");
+                        filterRegistrations();
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("❌ API Fetch Failed:", error);
+                        console.log("🔴 Response Text:", xhr.responseText);
+                        console.log("🔴 Status Code:", xhr.status);
+                    }
+                });
+            }
+
+            function populateCourseFilter(registrations) {
+                let courseFilter = $("#courseFilter");
+                courseFilter.empty();
+                courseFilter.append(`<option value="All">All</option>`); // ✅ Default option
+
+                // ✅ Get Unique Course Codes
+                let uniqueCourses = [...new Set(registrations.map(reg => reg.courseCode))];
+                uniqueCourses.forEach(course => {
+                    courseFilter.append(`<option value="${course}">${course}</option>`);
+                });
+
+                console.log("✅ Course Filter Populated:", uniqueCourses);
+            }
+
+            function populateSemesterFilter(registrations) {
+                let semesterFilter = $("#semesterFilter");
+                semesterFilter.empty();
+                semesterFilter.append(`<option value="All">All</option>`); // ✅ Default option
+
+                // ✅ Get Unique Semesters
+                let uniqueSemesters = [...new Set(registrations.map(reg => reg.semester))].sort();
+                uniqueSemesters.forEach(semester => {
+                    semesterFilter.append(`<option value="${semester}">Semester ${semester}</option>`);
+                });
+
+                console.log("✅ Semester Filter Populated:", uniqueSemesters);
+            }
+
+            function populateTable(registrations) {
+                let tableBody = $("#pendingRegistrationsTable tbody");
+                tableBody.empty();
+
+                if (!registrations || registrations.length === 0) {
+                    console.log("❌ No pending registrations found.");
+                    tableBody.append("<tr><td colspan='8' style='text-align:center;'>No pending registrations.</td></tr>");
+                    return;
+                }
+
+                registrations.forEach(reg => {
+                    let advisorApproval = reg.isApprovedByAdvisor === "Yes" ? "Approved" : "Not Approved";
+
+                    let row = `
+                        <tr>
+                            <td>${reg.studentID}</td>
+                            <td>${reg.courseCode}</td>
+                            <td>${new Date(reg.closingDate).toLocaleDateString()}</td>
+                            <td>${reg.status}</td>
+                            <td>${new Date(reg.registrationDate).toLocaleDateString()}</td>
+                            <td>${reg.attempt}</td> <!-- ✅ Display Attempt Count -->
+                            <td>${advisorApproval}</td> <!-- ✅ Display Advisor Approval Status -->
+                            <td class="action-buttons">
+                                <button class="btn-action btn-approve" onclick="updateStatus(${reg.pendingID}, 'Approved')">
+                                    <i class="fas fa-check-circle"></i> 
+                                </button>
+                                <button class="btn-action btn-reject" onclick="updateStatus(${reg.pendingID}, 'Rejected')">
+                                    <i class="fas fa-times-circle"></i> 
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+
+                console.log("✅ Table populated with filtered registrations.");
+            }
+
+            function filterRegistrations() {
+                let selectedStatus = $("#statusFilter").val();
+                let selectedCourse = $("#courseFilter").val();
+                let selectedSemester = $("#semesterFilter").val();
+                console.log(`🔹 Filtering by Status: ${selectedStatus}, Course: ${selectedCourse}, Semester: ${selectedSemester}`);
+
+                filteredData = allRegistrations;
+
+                if (selectedStatus !== "All") {
+                    filteredData = filteredData.filter(reg => reg.status === selectedStatus);
+                }
+                if (selectedCourse !== "All") {
+                    filteredData = filteredData.filter(reg => reg.courseCode === selectedCourse);
+                }
+                if (selectedSemester !== "All") {
+                    filteredData = filteredData.filter(reg => reg.semester === selectedSemester);
+                }
+
+                // Reset to first page when filters change
+                currentPage = 1;
+                updatePagination();
+                renderCurrentPage();
+            }
+
+            function updatePagination() {
+                const totalRecords = filteredData.length;
+                const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+                // Update pagination info
+                $("#total-records").text(totalRecords);
+
+                const start = totalRecords === 0 ? 0 : (currentPage - 1) * recordsPerPage + 1;
+                const end = Math.min(start + recordsPerPage - 1, totalRecords);
+                $("#start-record").text(start);
+                $("#end-record").text(end);
+
+                // Update pagination controls
+                $("#prev-page").prop("disabled", currentPage === 1);
+                $("#next-page").prop("disabled", currentPage >= totalPages);
+
+                // Generate page numbers
+                const pageNumbers = $("#page-numbers");
+                pageNumbers.empty();
+
+                // Only show 5 page numbers at most
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Adjust if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = $(`<button class="page-number ${i === currentPage ? 'active' : ''}">${i}</button>`);
+                    pageButton.click(() => {
+                        currentPage = i;
+                        updatePagination();
+                        renderCurrentPage();
+                    });
+                    pageNumbers.append(pageButton);
+                }
+            }
+
+            function renderCurrentPage() {
+                const start = (currentPage - 1) * recordsPerPage;
+                const end = start + recordsPerPage;
+                const pageData = filteredData.slice(start, end);
+
+                populateTable(pageData);
+            }
+
+            function updateStatus(pendingID, newStatus) {
+                console.log(`🔹 Updating status of PendingID: ${pendingID} to ${newStatus}`);
+
+                $.ajax({
+                    url: '@Url.Action("UpdatePendingStatus", "Admin")',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify({ PendingID: pendingID, Status: newStatus }),
+                    success: function (response) {
+                        alert(response.message);
+                        fetchPendingRegistrations();
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("❌ Failed to update status:", error);
+                        alert("Failed to update status.");
+                    }
+                });
+            }
+
+            $(document).ready(function() {
+                console.log("🔹 Page loaded. Calling fetchPendingRegistrations()...");
+                fetchPendingRegistrations(); // ✅ API is called when the page loads
+
+                function updateTime() {
+                    const currentDate = new Date();
+                    document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+                    document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+                }
+                setInterval(updateTime, 1000);
+                updateTime();
+
+                // ✅ Automatically filter "Pending" on load
+                $("#statusFilter").val("Pending");
+                filterRegistrations();
+
+                // Add pagination button handlers
+                $("#prev-page").click(function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updatePagination();
+                        renderCurrentPage();
+                    }
+                });
+
+                $("#next-page").click(function() {
+                    const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        updatePagination();
+                        renderCurrentPage();
+                    }
+                });
+            });
+        </script>
+    </div>
+    </div>
+</body>
+</html>

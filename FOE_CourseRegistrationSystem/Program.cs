@@ -1,4 +1,5 @@
 ﻿using FOE_CourseRegistrationSystem.Data;
+using FOE_CourseRegistrationSystem.Services; // ✅ Fixed Namespace Import
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,10 +7,8 @@ using System.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Database Connection Setup
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Test Database Connection BEFORE Application Starts
 try
 {
     using (var connection = new SqlConnection(connectionString))
@@ -24,12 +23,13 @@ catch (Exception ex)
     throw;
 }
 
-// ✅ Add services to the container BEFORE `builder.Build();`
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// ✅ Authentication & Authorization Setup (BEFORE `builder.Build();`)
+// ✅ Register the CloseExpiredSessionsService
+builder.Services.AddHostedService<CloseExpiredSessionsService>();
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -46,7 +46,6 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// ✅ Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -57,7 +56,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// ✅ Ensure Authentication Middleware is Used BEFORE Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
