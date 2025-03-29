@@ -3,6 +3,8 @@
     double gpa = (double)ViewData["GPA"];
     int totalCreditsEarned = (int)ViewData["TotalCreditsEarned"];
     int remainingCredits = (int)ViewData["RemainingCredits"];
+    var trackedCredits = (int)ViewData["TrackedCredits"];
+
 }
 @{
     Layout = null;
@@ -103,6 +105,16 @@
                 <div class="card total-credits-card">
                     <h2>Total Credits Earned : @totalCreditsEarned / 153</h2>
                 </div>
+
+<!-- Credit Limit Card -->
+                @{
+                    int currentSem = int.TryParse(ViewData["CurrentSemester"]?.ToString(), out int sem) ? sem : 0;
+                    int nextSem = currentSem + 1;
+                }
+<div class="card credit-limit-card">
+    <h2>Credits Limit for Semester @nextSem : @trackedCredits / 24 </h2>
+</div>
+
             </div>
         </div>
     </div>

@@ -266,6 +266,8 @@ body {
         color: var(--primary-color);
     }
 
+
+
 /* Responsive Design */
 @media screen and (max-width: 992px) {
     .dashboard-content {
