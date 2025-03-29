@@ -292,6 +292,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Admin/RegistrationSession.cshtml");
         }
 
+        public IActionResult AdminNotification()
+        {
+            return View("~/Views/Dashboard/Admin/AdminNotification.cshtml");
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> GetPendingRegistrations()
         {

@@ -229,6 +229,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
         {
             return View("~/Views/Dashboard/Student/CourseRegistration.cshtml");
         }
+
+        public IActionResult StudentNotification()
+        {
+            return View("~/Views/Dashboard/Student/StudentNotification.cshtml");
+        }
+
         public async Task<IActionResult> RegisteredCourse()
         {
             string studentEmail = User.Identity.Name;
