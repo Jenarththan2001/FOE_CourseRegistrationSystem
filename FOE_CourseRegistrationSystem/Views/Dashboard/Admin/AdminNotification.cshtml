@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="~/css/AdminNotification_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -22,7 +22,7 @@
             </div>
             <ul class="nav-links">
                 <div class="top-links">
-                <li class="active">
+                <li class>
                     <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
                 </li>
                 <li>
@@ -36,7 +36,7 @@
                 </li>
         </div>
         <div class="bottom-links">
-            <li class="bottom-items">
+            <li class="bottom-items active">
                 <a href="@Url.Action("AdminNotification", "Admin")"><i class="fas fa-bell"></i><span>Notifications</span></a>
             </li>
             <li class="bottom-items">
@@ -53,7 +53,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Admin Dashboard</h1>
+            <h1>Admin Notification</h1>
             <div class="user-info">
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
@@ -63,28 +63,32 @@
             </div>
         </div>
 
-        <!-- Dashboard Content -->
-        <div class="dashboard-content">
-            <!-- Total Users Card -->
-            <div class="card total-users-card">
-                <h2>Lecturers: 30</h2>
+        <!-- Notifications Content -->
+        <div class="notifications-content">
+            <h2>Notifications</h2>
+
+            <div class="select-all-buttons">
+                <button id="selectAll">Select All</button>
+                <button id="clearNotifications">Clear Selected</button>
             </div>
 
-            <!-- Registered Students Card -->
-            <div class="card registered-students-card">
-                <h2>Students: 250</h2>
-            </div>
+            <div class="notifications-list">
+                <div class="notification-item">
+                    <input type="checkbox" id="notification1">
+                    <label for="notification1">Opened new courses for registration for the 2025 academic year.</label>
+                    <span class="timestamp">2025-03-28, 10:00 AM</span>
+                </div>
 
-            <!-- Active Courses Card -->
-            <div class="card active-courses-card">
-                <h2>Active Courses: 24</h2>
-            </div>
+                <div class="notification-item">
+                    <input type="checkbox" id="notification2">
+                    <label for="notification2">New student registration request pending approval.</label>
+                    <span class="timestamp">2025-03-28, 11:00 AM</span>
+                </div>
 
-            <!-- Notifications Card -->
-            <div class="card notification-card">
-                <div class="notification-content">
-                    <p>3 new user registration requests pending approval</p>
-                    <i class="fas fa-bell"></i>
+                <div class="notification-item">
+                    <input type="checkbox" id="notification3">
+                    <label for="notification3">Opened new courses for registration for the 2025 academic year.</label>
+                    <span class="timestamp">2025-03-27, 09:00 AM</span>
                 </div>
             </div>
         </div>
@@ -93,18 +97,27 @@
 
     <script>
         function updateTime() {
-            const currentDate = new Date();
-            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+            document.getElementById("current-date").textContent = new Date().toLocaleDateString();
+            document.getElementById("current-time").textContent = new Date().toLocaleTimeString();
         }
-
-        // Update time every second
         setInterval(updateTime, 1000);
-
-        // Initial call to set the time immediately
         updateTime();
 
-        
+        document.getElementById('clearNotifications').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.closest('.notification-item').remove();
+                }
+            });
+        });
+
+        document.getElementById('selectAll').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
     </script>
 </body>
 

@@ -1,0 +1,114 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adviser Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdvisorNotification_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <span>FOE UOJ</span>
+        </div>
+        <ul class="nav-links">
+            <div class="top-links">
+            <li class="active">
+                <a href="@Url.Action("AdviserDashboard", "Advisor")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            </li>
+            <li>
+                <a href="@Url.Action("AdviseeStudents", "Advisor")"><i class="fas fa-users"></i><span>Advisee Course Registration</span></a>
+            </li>
+    </div>
+    <div class="bottom-links">
+        <li class="bottom-items active">
+            <a href="@Url.Action("AdvisorNotification", "Advisor")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+        </li>
+        <li class="bottom-items">
+            <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+        </li>
+    </div>
+    </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Advisor Notification</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">|John Doe</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Notifications Content -->
+        <div class="notifications-content">
+            <h2>Notifications</h2>
+
+            <div class="select-all-buttons">
+                <button id="selectAll">Select All</button>
+                <button id="clearNotifications">Clear Selected</button>
+            </div>
+
+            <div class="notifications-list">
+                <div class="notification-item">
+                    <input type="checkbox" id="notification1">
+                    <label for="notification1">2025 academic year students waiting for approval.</label>
+                    <span class="timestamp">2025-03-28, 10:00 AM</span>
+                </div>
+
+                <div class="notification-item">
+                    <input type="checkbox" id="notification2">
+                    <label for="notification2">2026 academic year students waiting for approval.</label>
+                    <span class="timestamp">2025-03-28, 11:00 AM</span>
+                </div>
+
+                <div class="notification-item">
+                    <input type="checkbox" id="notification3">
+                    <label for="notification3">2025 academic year students registrations will be closed on 29/01/2025</label>
+                    <span class="timestamp">2025-03-27, 09:00 AM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            document.getElementById("current-date").textContent = new Date().toLocaleDateString();
+            document.getElementById("current-time").textContent = new Date().toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        document.getElementById('clearNotifications').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.closest('.notification-item').remove();
+                }
+            });
+        });
+
+        document.getElementById('selectAll').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+    </script>
+</body>
+
+</html>
