@@ -63,6 +63,55 @@
             </div>
         </div>
 
+        <!-- Personal Details Card (Combined) -->
+        <div class="card personal-details-card">
+            <div class="card-header">
+                <h2>Personal Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-columns">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="firstName">First Name:</label>
+                            <input type="text" id="firstName" value="Puvinthan" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name:</label>
+                            <input type="text" id="lastName" value="Selvanayakam" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="staffID">Staff ID:</label>
+                            <input type="text" id="staffID" value="18" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="nic">NIC:</label>
+                            <input type="text" id="nic" value="991234501V" readonly>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" value="puvi@eng.jfn.ac.lk" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneNo">Phone No:</label>
+                            <input type="text" id="phoneNo" value="0712345678" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender:</label>
+                            <select id="gender" disabled>
+                                <option value="male">Male</option>
+                            </select>
+                        </div>
+                        <div class="form-group edit-button-container">
+                            <button class="edit-button" onclick="toggleEdit(this)">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Dashboard Content -->
         <div class="dashboard-content">
             <!-- Total Users Card -->
@@ -80,6 +129,8 @@
                 <h2>Active Courses: 24</h2>
             </div>
 
+
+
             <!-- Notifications Card -->
             <div class="card notification-card">
                 <div class="notification-content">
@@ -92,6 +143,28 @@
     </div>
 
     <script>
+             function toggleEdit(button) {
+            const cardBody = button.closest('.card-body');
+            const isReadOnly = cardBody.querySelector('#firstName').readOnly;
+
+            // Toggle read-only state for input elements
+            const inputs = cardBody.querySelectorAll('input[type="text"], input[type="email"], select');
+            inputs.forEach(input => {
+                input.readOnly = !isReadOnly;
+                input.disabled = !isReadOnly; // Also toggle the disabled state for select elements
+            });
+
+            // Change appearance based on edit mode
+            if (isReadOnly) {
+                // Change to edit mode
+                button.textContent = 'Save';
+                cardBody.classList.add('edit-mode'); // Add class for edit mode styles
+            } else {
+                // Change to read-only mode
+                button.textContent = 'Edit';
+                cardBody.classList.remove('edit-mode'); // Remove edit mode styles
+            }
+        }
         function updateTime() {
             const currentDate = new Date();
             document.getElementById("current-date").textContent = currentDate.toLocaleDateString();

@@ -105,6 +105,82 @@ body {
         border-radius: 5px;
     }
 
+
+/*Personal Details Card*/
+.personal-details-card {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+    .personal-details-card .card-header {
+        margin-bottom: 20px;
+    }
+
+        .personal-details-card .card-header h2 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+    .personal-details-card .card-body .form-group {
+        margin-bottom: 15px;
+    }
+
+    .personal-details-card .card-body label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: var(--text-color);
+    }
+    .personal-details-card .card-body input[type="text"],
+    .personal-details-card .card-body input[type="email"],
+    .personal-details-card .card-body select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+        color: var(--text-color);
+        box-sizing: border-box;
+    }
+
+        .personal-details-card .card-body input[readonly],
+        .personal-details-card .card-body select[disabled] {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+
+
+    .personal-details-card .card-body input[type="text"],
+    .personal-details-card .card-body input[type="date"],
+    .personal-details-card .card-body select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+        color: var(--text-color);
+        box-sizing: border-box;
+    }
+
+        .personal-details-card .card-body input[readonly],
+        .personal-details-card .card-body select[disabled] {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+
+    .personal-details-card .card-body .form-columns {
+        display: flex;
+        gap: 20px;
+    }
+
+        .personal-details-card .card-body .form-columns .form-column {
+            flex: 1;
+        }
+
 /* Main Content Styles */
 .main-content {
     flex: 1;
@@ -267,4 +343,35 @@ body {
             "system-logs"
             "notifications";
     }
+}
+/* Edit Button Styling */
+.edit-button {
+    background-color: var(--primary-color); /* Primary color */
+    color: white; /* Text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding for size */
+    font-size: 16px; /* Font size */
+    font-weight: 500; /* Make text bold */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and click transitions */
+}
+
+/* Hover Effect */
+.edit-button:hover {
+    background-color: var(--secondary-color); /* Change to secondary color on hover */
+    transform: translateY(-2px); /* Slightly lift the button on hover */
+}
+
+/* Active/Pressed Effect */
+.edit-button:active {
+    transform: translateY(1px); /* Slightly press the button on click */
+}
+
+/* Disabled State (Optional) */
+.edit-button:disabled {
+    background-color: #ccc; /* Gray background for disabled state */
+    color: #666; /* Dimmed text color */
+    cursor: not-allowed; /* Show 'not allowed' cursor for disabled state */
+    opacity: 0.7; /* Slightly transparent look */
 }
