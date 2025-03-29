@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FOE_CourseRegistrationSystem.Models // ✅ Add this namespace
+namespace FOE_CourseRegistrationSystem.Models
 {
     public class PendingRegistration
     {
@@ -18,6 +18,11 @@ namespace FOE_CourseRegistrationSystem.Models // ✅ Add this namespace
         [ForeignKey("Student")]
         public int StudentID { get; set; }
         public Student Student { get; set; }
+
+        // ✅ ✅ ✅ Make CourseOfferingID nullable to avoid FK conflict during migration
+        [ForeignKey("CourseOffering")]
+        public int? CourseOfferingID { get; set; }
+        public CourseOffering CourseOffering { get; set; }
 
         public string Status { get; set; } = "Pending"; // ✅ Default: Pending, Approved, or Rejected
 

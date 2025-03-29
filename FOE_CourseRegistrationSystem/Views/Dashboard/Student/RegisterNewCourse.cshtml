@@ -164,7 +164,7 @@
                 console.log(`➡ Course: ${course.courseCode} - ${course.courseName}`);
 
                 let row = `
-                    <tr data-semester="${course.semester || 'N/A'}">
+                   <tr data-semester="${course.semester || 'N/A'}" data-offeringid="${course.courseOfferingID}">
                         <td>${course.courseCode}</td> <!-- ✅ Corrected property -->
                         <td>${course.courseName}</td> <!-- ✅ Corrected property -->
                         <td>${course.credit}</td> <!-- ✅ Corrected property -->
@@ -229,36 +229,43 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        function submitCourses() {
-            let selectedCourses = [];
-            $(".course-checkbox:checked").each(function () {
-                selectedCourses.push($(this).closest("tr").find("td:first").text().trim());
-            });
+function submitCourses() {
+    let selectedCourses = [];
+    $(".course-checkbox:checked").each(function () {
+        let row = $(this).closest("tr");
+        selectedCourses.push({
+            courseCode: row.find("td:first").text().trim(),
+            courseOfferingID: parseInt(row.data("offeringid")) || 0
+        });
+    });
 
-            if (selectedCourses.length === 0) {
-                alert("Please select at least one course to register.");
-                return;
-            }
+    if (selectedCourses.length === 0) {
+        alert("Please select at least one course to register.");
+        return;
+    }
 
-            console.log("🔹 Submitting courses:", selectedCourses);
+    console.log("🔹 Submitting courses:", selectedCourses);
 
-            $.ajax({
-                url: '@Url.Action("SubmitCourseRegistration", "Student")',
-                type: 'POST',
-                contentType: "application/json",
-                data: JSON.stringify(selectedCourses),
-                success: function (response) {
-                    alert(response.message);
-                    $(".course-checkbox:checked").prop("checked", false); // ✅ Uncheck all after submission
-                    $("#totalCredits").text("0"); // ✅ Reset credit count
-                    fetchAvailableCourses(); // ✅ Refresh table after registration
-                },
-                error: function (xhr, status, error) {
-                    console.log("❌ Failed to submit courses:", error);
-                    alert("Error: " + xhr.responseJSON.message);
-                }
-            });
+    $.ajax({
+        url: '@Url.Action("SubmitCourseRegistration", "Student")',
+        type: 'POST',
+        contentType: "application/json",
+        data: JSON.stringify(selectedCourses), // ✅ Now sending objects
+        success: function (response) {
+            alert(response.message);
+            $(".course-checkbox:checked").prop("checked", false);
+            $("#totalCredits").text("0");
+            fetchAvailableCourses();
+        },
+        error: function (xhr, status, error) {
+            console.log("❌ Failed to submit courses:", error);
+            alert("Error: " + (xhr.responseJSON ? xhr.responseJSON.message : error));
         }
+    });
+}
+
+
+
     </script>
 
 
