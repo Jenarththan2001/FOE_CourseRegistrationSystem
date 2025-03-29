@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using FOE_CourseRegistrationSystem.Services;
 
 namespace FOE_CourseRegistrationSystem.Controllers
 {
@@ -12,10 +13,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
     public class StudentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SemesterService _semesterService;
 
-        public StudentController(ApplicationDbContext context)
+        public StudentController(ApplicationDbContext context, SemesterService semesterService)
         {
             _context = context;
+            _semesterService = semesterService;
         }
 
 
@@ -144,7 +147,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
         {
             string studentEmail = User.Identity.Name;
 
-            // Fetch student details
             var student = await _context.Students
                 .Include(s => s.Department)
                 .Include(s => s.Advisor)
@@ -155,28 +157,30 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return NotFound("Student not found.");
             }
 
-            // Fetch courses where results are available (Total Credits Earned)
             var results = await _context.Results
                 .Where(r => r.StudentID == student.StudentID)
                 .Include(r => r.CourseOffering)
                 .ThenInclude(co => co.Course)
                 .ToListAsync();
 
-            int totalCreditsEarned = results.Sum(r => r.CourseOffering.Course.Credit); // Only courses with results
-            int remainingCredits = 153 - totalCreditsEarned; // Engineering degree requires 153 credits
-
-            // Calculate GPA
+            int totalCreditsEarned = results.Sum(r => r.CourseOffering.Course.Credit);
+            int remainingCredits = 153 - totalCreditsEarned;
             double totalGradePoints = results.Sum(r => ConvertGradeToPoint(r.Grade) * r.CourseOffering.Course.Credit);
             double gpa = (totalCreditsEarned > 0) ? totalGradePoints / totalCreditsEarned : 0;
 
-            // Pass data to view
+            // ✅ FIX: Get current semester
+            string currentSemester = _semesterService.GetCurrentSemester(student);
+            Console.WriteLine($"🎯 Current Semester of Student {student.StudentID} = {currentSemester}");
+            // ✅ Pass to ViewData
             ViewData["Student"] = student;
             ViewData["GPA"] = gpa;
             ViewData["TotalCreditsEarned"] = totalCreditsEarned;
             ViewData["RemainingCredits"] = remainingCredits;
+            ViewData["CurrentSemester"] = currentSemester;
 
             return View("~/Views/Dashboard/Student/StudentDashboard.cshtml");
         }
+
 
         private double ConvertGradeToPoint(string grade)
         {
@@ -483,10 +487,6 @@ namespace FOE_CourseRegistrationSystem.Controllers
             public string Coordinator { get; set; }
             public int Attempt { get; set; }
         }
-
-
-
-
 
 
     }

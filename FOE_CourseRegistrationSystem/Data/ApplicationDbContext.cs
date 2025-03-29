@@ -21,6 +21,8 @@ namespace FOE_CourseRegistrationSystem.Data
         public DbSet<RegistrationSession> RegistrationSessions { get; set; }
         public DbSet<RegistrationSessionCourse> RegistrationSessionCourses { get; set; }
         public DbSet<PendingRegistration> PendingRegistrations { get; set; }
+        public DbSet<AcademicSchedule> AcademicSchedules { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
