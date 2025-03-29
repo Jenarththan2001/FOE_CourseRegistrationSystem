@@ -29,6 +29,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // ✅ Register the CloseExpiredSessionsService
 builder.Services.AddHostedService<CloseExpiredSessionsService>();
+builder.Services.AddScoped<SemesterService>();
+
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

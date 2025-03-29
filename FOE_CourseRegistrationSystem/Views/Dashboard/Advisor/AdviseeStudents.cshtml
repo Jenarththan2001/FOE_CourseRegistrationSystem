@@ -82,13 +82,13 @@
             <td>@student.StudentID</td>
             <td>@student.FullName</td>
             <td>@student.AcademicYear</td>
-            <td>N/A</td> <!-- Current Semester: optional or not stored -->
+            <td>@student.CurrentSemester</td>
             <td>
                 <button class="action-button view-details-button"
                         data-regno="@student.StudentID"
                         data-name="@student.FullName"
                         data-year="@student.AcademicYear"
-                        data-semester="N/A">
+                        data-semester="@student.CurrentSemester">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>

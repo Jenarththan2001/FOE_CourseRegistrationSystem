@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq; // Make sure you have this namespace
 using System.Text.Json;
+using FOE_CourseRegistrationSystem.Services;
 
 
 namespace FOE_CourseRegistrationSystem.Controllers
@@ -15,10 +16,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
     public class AdvisorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SemesterService _semesterService;
 
-        public AdvisorController(ApplicationDbContext context)
+        public AdvisorController(ApplicationDbContext context, SemesterService semesterService)
         {
             _context = context;
+            _semesterService = semesterService;
         }
 
         public IActionResult AdviserDashboard()
@@ -36,19 +39,25 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 return Unauthorized("Advisor not found.");
             }
 
+            // Include department if needed by the semester service
             var students = await _context.Students
                 .Where(s => s.StaffID == advisor.StaffID)
-                .Select(s => new
-                {
-                    s.StudentID,
-                    s.FullName,
-                    s.AcademicYear
-                })
+                .Include(s => s.Department)
                 .ToListAsync();
 
-            ViewBag.Students = students;
+            // Map with current semester
+            var studentList = students.Select(s => new
+            {
+                s.StudentID,
+                s.FullName,
+                s.AcademicYear,
+                CurrentSemester = _semesterService.GetCurrentSemester(s)
+            }).ToList();
+
+            ViewBag.Students = studentList;
             return View("~/Views/Dashboard/Advisor/AdviseeStudents.cshtml");
         }
+
 
         public IActionResult AdvisorNotification()
         {
