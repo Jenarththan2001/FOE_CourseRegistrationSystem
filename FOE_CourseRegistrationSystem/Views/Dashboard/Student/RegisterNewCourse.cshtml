@@ -1,5 +1,6 @@
 ﻿@{
-    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student; // ✅ Explicit Type Casting
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
+    Layout = null;
 }
 
 @{
@@ -42,6 +43,9 @@
                 <a href="@Url.Action("StudentNotification", "Student")"><i class="fas fa-bell"></i><span>Notifications</span></a>
             </li>
             <li class="bottom-items">
+                <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+            </li>
+            <li class="bottom-items">
                 <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
             </li>
         </div>
@@ -55,9 +59,9 @@
             <h1>Register New Course</h1>
             <div class="user-info">
                 <div class="profile-pic">
-                    <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                   <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="student-id">| @(student != null ? student.StudentID : "Unknown")</span> <!-- ✅ Safe Casting -->
+                <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>

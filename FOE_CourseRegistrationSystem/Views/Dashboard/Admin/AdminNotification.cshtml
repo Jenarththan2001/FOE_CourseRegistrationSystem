@@ -39,9 +39,7 @@
             <li class="bottom-items active">
                 <a href="@Url.Action("AdminNotification", "Admin")"><i class="fas fa-bell"></i><span>Notifications</span></a>
             </li>
-            <li class="bottom-items">
-                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-            </li>
+            
             <li class="bottom-items">
                 <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
             </li>
@@ -58,7 +56,7 @@
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="admin-name">| Admin: John Doe</span>
+                <span id="admin-name">@ViewBag.AdminName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>

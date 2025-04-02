@@ -1,0 +1,382 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    --primary-color: #6c5ce7;
+    --secondary-color: #a29bfe;
+    --background-color: #f5f6fa;
+    --card-bg-color: #fff;
+    --text-color: #2d3436;
+    --sidebar-width: 240px;
+    --header-height: 60px;
+    --card-border-radius: 10px;
+    --chart-blue: #0099FF;
+    --chart-green: #00CC66;
+    --chart-yellow: #FFCC00;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: white;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 20px 0;
+    height: calc(100% - 70px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.top-links {
+    display: flex;
+    flex-direction: column;
+}
+
+.bottom-links {
+    margin-top: auto;
+}
+
+.nav-links li {
+    padding: 10px 20px;
+    margin-bottom: 5px;
+}
+
+    .nav-links li a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+
+        .nav-links li a i {
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+    .nav-links li.active {
+        background-color: var(--primary-color);
+        border-radius: 5px;
+    }
+
+        .nav-links li.active a {
+            color: white;
+        }
+
+    .nav-links li:hover:not(.active) {
+        background-color: #f1f1f1;
+        border-radius: 5px;
+    }
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+    .header h1 {
+        color: var(--primary-color);
+    }
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+    .user-info span {
+        margin-left: 10px;
+    }
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+    border: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .profile-pic img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+/* Settings Content Styles */
+.dashboard-content.settings-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "account-settings-card"
+        "preferences-card";
+}
+
+.card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(157, 157, 157, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+.account-settings-card,
+.preferences-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(157, 157, 157, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .account-settings-card h2,
+    .preferences-card h2 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+
+.settings-form .form-group {
+    margin-bottom: 15px;
+}
+
+.settings-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.settings-form input[type="email"],
+.settings-form input[type="tel"],
+.settings-form input[type="password"],
+.settings-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    color: var(--text-color);
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+.settings-form textarea {
+    resize: vertical;
+}
+
+.settings-form .save-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+    .settings-form .save-button:hover {
+        background-color: var(--secondary-color);
+    }
+
+.preferences-options .preference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.preference-label {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 992px) {
+    .main-content {
+        margin-left: 0; /* Remove margin for smaller screens */
+    }
+
+    .sidebar {
+        position: static; /* Make sidebar part of the document flow */
+        width: 100%; /* Take full width */
+        height: auto; /* Adjust height */
+        box-shadow: none; /* Remove shadow */
+        margin-bottom: 20px; /* Add some space below the sidebar */
+    }
+
+        .sidebar .logo,
+        .sidebar .nav-links {
+            padding: 10px; /* Reduce padding for smaller screens */
+        }
+
+    .nav-links {
+        flex-direction: row; /* Display links in a row */
+        justify-content: space-around; /* Distribute links evenly */
+        align-items: center;
+    }
+
+        .nav-links li {
+            margin-bottom: 0; /* Remove bottom margin */
+        }
+
+            .nav-links li a {
+                flex-direction: column; /* Stack icon and text */
+                text-align: center; /* Center the text */
+            }
+
+                .nav-links li a i {
+                    margin-right: 0; /* Remove margin for icon */
+                    margin-bottom: 5px; /* Add space below icon */
+                }
+
+    .dashboard-content.settings-content {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "account-settings-card"
+            "preferences-card";
+    }
+
+    .container {
+        flex-direction: column; /* Stack sidebar and main content */
+    }
+    /* Show elements on larger screens, hide on smaller screens */
+    @media (max-width: 768px) {
+        /* Hide the sidebar */
+        .sidebar {
+            display: none;
+        }
+
+        /* Make the main content take up the full width of the screen */
+        .main-content {
+            margin-left: 0;
+            width: 100%;
+        }
+    }
+}
+/* FAQs Page Specific Styles */
+.faqs-content {
+    padding: 20px;
+}
+
+.faqs-grid {
+    display: flex;
+}
+
+.faq-column {
+    width: 50%;
+    padding: 10px;
+}
+
+.faq-item {
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    margin-bottom: 10px;
+    box-shadow: 0 0 0 rgb(255, 255, 255);
+}
+
+.faq-question {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-color);
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+}
+
+    .faq-question h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .faq-question i {
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        transition: transform 0.2s ease-in-out;
+    }
+
+.faq-answer {
+    padding: 15px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    display: none; /* Initially hide the answer */
+}
+
+    .faq-answer.active {
+        display: block; /* Show the answer when active class is present */
+    }
+
+.faq-footer {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin-top: 20px;
+    text-align: center;
+}
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .faqs-grid {
+        flex-direction: column; /* Stack columns on smaller screens */
+    }
+
+    .faq-column {
+        width: 100%; /* Make columns full width */
+        padding: 0;
+    }
+}

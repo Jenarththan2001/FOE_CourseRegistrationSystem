@@ -31,4 +31,13 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Views\Dashboard\Student\CourseRegistration.cshtml" />
+    <None Include="Views\Dashboard\Student\RegisteredCourse.cshtml" />
+    <None Include="Views\Dashboard\Student\RegisterNewCourse.cshtml" />
+    <None Include="Views\Dashboard\Student\ResultPage.cshtml" />
+    <None Include="Views\Dashboard\Student\StudentDashboard.cshtml" />
+    <None Include="Views\Dashboard\Student\StudentNotification.cshtml" />
+  </ItemGroup>
+
 </Project>
