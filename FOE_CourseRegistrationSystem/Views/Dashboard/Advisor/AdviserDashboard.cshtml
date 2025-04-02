@@ -48,10 +48,52 @@
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="admin-name">| Admin: John Doe</span>
+                 <span id="advisor-name">@ViewBag.AdvisorName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>
+
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+
+            <div class="card personal-details">
+                <h2>Personal details</h2>
+                <div class="details-content">
+        <p><span>Name :</span> - <span>@ViewBag.AdvisorName</span></p>
+        <p><span>Phone :</span> - <span>@ViewBag.AdvisorPhone</span></p>
+        <p><span>Email :</span> - <span>@ViewBag.AdvisorEmail</span></p>
+                </div>
+            </div>
+<!-- Total advisees Card -->
+<div class="card total-users-card">
+    <h2>Total advisees: @ViewBag.AdviseeCount</h2>
+</div>
+
+<div class="card registered-students-card">
+    <h2>Advisees Summary</h2>
+    <ul>
+                    @foreach (var group in ViewBag.AdviseeGroups)
+                    {
+                <li>Batch @group.AcademicYear : @group.Count students</li>
+                    }
+    </ul>
+</div>
+
+                
+
+
+            <!-- Notifications Card -->
+<div class="card notification-card">
+    <div class="notification-content">
+        <p>@ViewBag.PendingRequests registration requests are in pending approval</p>
+        <i class="fas fa-bell"></i>
+    </div>
+</div>
+
+        </div>
+    </div>
+    </div>
 
         
 

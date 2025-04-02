@@ -155,11 +155,13 @@ body {
 /* Dashboard Content Styles */
 .dashboard-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     grid-template-areas:
-        "total-users registered-students active-courses"
-        "system-logs system-logs notifications";
+        "personal-details total-users"
+        "personal-details registered-students"
+        "personal-details active-courses"
+        "notifications system-logs";
 }
 
 .card {
@@ -220,6 +222,54 @@ body {
         color: var(--chart-yellow);
     }
 
+
+/* Chart Styles */
+.chart-card {
+    grid-area: chart-card;
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(157, 157, 157, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    ?width: 100%; /* Adjust width based on grid */
+}
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+.chart {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.bar {
+    width: 20%; /* Adjust based on number of bars */
+    position: relative;
+}
+
+    .bar::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+    }
+
+.labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Match chart width */
+    margin: 0 auto;
+}
+
+    .labels span {
+        font-size: 12px;
+    }
+
 /* Responsive Design */
 @media screen and (max-width: 992px) {
     .dashboard-content {
@@ -268,3 +318,25 @@ body {
             "notifications";
     }
 }
+
+.personal-details {
+    grid-area: personal-details;
+    background-color: #fff;
+    border-left: 5px solid var(--primary-color);
+}
+
+    .personal-details h2 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+
+.details-content p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+    .details-content p span {
+        font-weight: 600;
+    }

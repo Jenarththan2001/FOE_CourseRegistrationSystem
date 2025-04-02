@@ -19,14 +19,58 @@ namespace FOE_CourseRegistrationSystem.Controllers
         }
 
         // GET: Coordinator Dashboard
-        public IActionResult CoordinatorDashboard()
+        public async Task<IActionResult> CoordinatorDashboard()
         {
+            var coordinatorEmail = User.Identity.Name;
+            var coordinator = await _context.Staffs.FirstOrDefaultAsync(s => s.Email == coordinatorEmail);
+
+            if (coordinator == null)
+            {
+                return NotFound("Coordinator not found.");
+            }
+
+            // Personal Info
+            ViewBag.CoordinatorName = coordinator.FullName ?? "Unknown";
+            ViewBag.CoordinatorPhone = coordinator.PhoneNo ?? "Unknown";
+            ViewBag.CoordinatorEmail = coordinator.Email ?? "Unknown";
+
+            // Coordinated Courses Count
+            int coordinatedCoursesCount = await _context.CourseOfferings
+                .Where(co => co.StaffID == coordinator.StaffID)
+                .CountAsync();
+
+            ViewBag.CoordinatedCourseCount = coordinatedCoursesCount;
+
+            // Coordinated Courses with Enrollments Summary
+            var enrollments = await _context.CourseOfferings
+                .Where(o => o.StaffID == coordinator.StaffID)
+                .Include(o => o.Course)
+                .GroupJoin(
+                    _context.Registrations,
+                    co => co.OfferingID,
+                    r => r.OfferingID,
+                    (co, registrations) => new
+                    {
+                        CourseName = co.Course.CourseName,
+                        AcademicYear = co.AcademicID,
+                        Semester = co.Semester,
+                        StudentCount = registrations.Count()
+                    }
+                )
+                .ToListAsync();
+
+            ViewBag.Enrollments = enrollments;
+
             return View("~/Views/Dashboard/Coordinator/CoordinatorDashboard.cshtml");
         }
 
+
         // GET: Coordinating Courses Page
-        public IActionResult CoordinatingCourses()
+        public async Task<IActionResult> CoordinatingCourses()
         {
+            var coordinatorEmail = User.Identity.Name;
+            var coordinator = await _context.Staffs.FirstOrDefaultAsync(s => s.Email == coordinatorEmail);
+            ViewBag.CoordinatorName = coordinator?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Coordinator/CoordinatingCourses.cshtml");
         }
 

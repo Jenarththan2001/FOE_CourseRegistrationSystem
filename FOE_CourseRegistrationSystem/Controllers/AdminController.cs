@@ -28,8 +28,9 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// </summary>
         public async Task<IActionResult> CourseOffering()
         {
-            // ✅ Fetch Admin Name from Session
-            ViewBag.AdminName = User.Identity.Name;
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
 
             // ✅ Fetch Departments (Exclude Administration)
             ViewBag.Departments = await _context.Departments
@@ -278,41 +279,72 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// <summary>
         /// Loads Admin Dashboard
         /// </summary>
-        public IActionResult AdminDashboard()
+        public async Task<IActionResult> AdminDashboard()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+
+            if (admin != null)
+            {
+                ViewBag.AdminName = admin.FullName;
+                ViewBag.AdminPhone = admin.PhoneNo;
+                ViewBag.AdminEmail = admin.Email;
+            }
+            else
+            {
+                ViewBag.AdminName = "Unknown";
+                ViewBag.AdminPhone = "Unknown";
+                ViewBag.AdminEmail = "Unknown";
+            }
+            // ✅ Dynamically count lecturers (Role = 0 OR Role = 2)
+            ViewBag.TotalLecturers = await _context.Staffs
+                .Where(s => s.Role == StaffRole.Advisor || s.Role == StaffRole.Coordinator)
+                .CountAsync();
+            // ✅ Total Students
+            ViewBag.TotalStudents = await _context.Students.CountAsync();
+
+            // ✅ Total Pending Requests
+            ViewBag.TotalPendingRequests = await _context.PendingRegistrations
+                .Where(p => p.Status == "Pending")
+                .CountAsync();
+            ViewBag.TotalOpenSessions = await _context.RegistrationSessions.Where(r => r.IsOpen).CountAsync();
+
             return View("~/Views/Dashboard/Admin/AdminDashboard.cshtml");
         }
+
+
 
         /// <summary>
         /// Loads Registration Details Page
         /// </summary>
-        public IActionResult RegistrationDetails()
+        public async Task<IActionResult> RegistrationDetails()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/RegistrationDetails.cshtml");
         }
 
         /// <summary>
         /// Loads Advisor Details Page
         /// </summary>
-        public IActionResult AdvisorDetails()
+        public async Task<IActionResult> AdvisorDetails()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/AdvisorDetails.cshtml");
         }
 
-        /// <summary>
-        /// Loads Old Registration History Page
-        /// </summary>
-        public async Task<IActionResult> OldRegistrationHistory()
-        {
-
-            return View("~/Views/Dashboard/Admin/OldRegistrationHistory.cshtml");
-        }
 
         /// <summary>
         /// Loads Pending Registrations Page
         /// </summary>
         public async Task<IActionResult> PendingRegistrations()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/PendingRegistrations.cshtml");
         }
 
@@ -321,11 +353,17 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// </summary>
         public async Task<IActionResult> RegistrationSession()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/RegistrationSession.cshtml");
         }
 
-        public IActionResult AdminNotification()
+        public async Task<IActionResult> AdminNotification()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/AdminNotification.cshtml");
         }
 

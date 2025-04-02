@@ -1,6 +1,7 @@
 ﻿@{
     var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
     var results = ViewData["Results"] as List<FOE_CourseRegistrationSystem.Models.Result>;
+    Layout = null;
 }
 @{
     Layout = null;
@@ -42,6 +43,9 @@
                     <a href="@Url.Action("StudentNotification", "Student")"><i class="fas fa-bell"></i><span>Notifications</span></a>
                 </li>
                 <li class="bottom-items">
+                    <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+                </li>
+                <li class="bottom-items">
                     <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
                 </li>
             </div>
@@ -55,9 +59,9 @@
                 <h1>Student - Results</h1>
                 <div class="user-info">
                     <div class="profile-pic">
-                        <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                       <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                     </div>
-                    <span id="student-id">| @student.StudentID</span>
+                    <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
                     <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
                 </div>
             </div>
