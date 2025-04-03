@@ -35,12 +35,6 @@
             </div>
             <div class="bottom-links">
                 <li class="bottom-items">
-                    <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-                </li>
-                <li class="bottom-items">
-                    <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-                </li>
-                <li class="bottom-items">
                     <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
                 </li>
             </div>
@@ -56,7 +50,7 @@
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Coordinator Profile">
                 </div>
-                <span id="admin-name">| Coordinator: John Doe</span>
+                <span id="coordinator-name">@ViewBag.CoordinatorName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>

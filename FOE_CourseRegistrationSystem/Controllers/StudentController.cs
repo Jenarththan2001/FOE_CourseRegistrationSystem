@@ -186,6 +186,12 @@ namespace FOE_CourseRegistrationSystem.Controllers
             int trackedCredits = await _creditTrackingService.GetTrackedCreditsAsync(student);
             Console.WriteLine($"📢 Pending Credits for Next Semester = {trackedCredits}");
 
+            // ✅ ✅ ✅ Fetch Open Registration Sessions for this Student
+            var openSessions = await _context.RegistrationSessions
+                .Where(rs => rs.AcademicYear == student.AcademicYear && rs.IsOpen && rs.EndDate >= DateTime.UtcNow)
+                .ToListAsync();
+
+
             // ✅ Pass to ViewData
             ViewData["Student"] = student;
             ViewData["GPA"] = gpa;
@@ -193,6 +199,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
             ViewData["RemainingCredits"] = remainingCredits;
             ViewData["CurrentSemester"] = currentSemester;
             ViewData["TrackedCredits"] = trackedCredits;
+            ViewData["OpenSessions"] = openSessions;
 
             return View("~/Views/Dashboard/Student/StudentDashboard.cshtml");
         }
@@ -246,14 +253,41 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Student/ResultPage.cshtml");
         }
 
-        public IActionResult CourseRegistration()
+        public async Task<IActionResult> CourseRegistration()
         {
+            string studentEmail = User.Identity.Name;
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == studentEmail);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+            ViewData["Student"] = student;
             return View("~/Views/Dashboard/Student/CourseRegistration.cshtml");
         }
 
-        public IActionResult StudentNotification()
+
+        public async Task<IActionResult> StudentNotification()
         {
+            string studentEmail = User.Identity.Name;
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == studentEmail);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+            ViewData["Student"] = student;
             return View("~/Views/Dashboard/Student/StudentNotification.cshtml");
+        }
+
+        public async Task<IActionResult> FAQs()
+        {
+            string studentEmail = User.Identity.Name;
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == studentEmail);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+            ViewData["Student"] = student;
+            return View("~/Views/Dashboard/Student/FAQs.cshtml");
         }
 
         public async Task<IActionResult> RegisteredCourse()

@@ -24,10 +24,45 @@ namespace FOE_CourseRegistrationSystem.Controllers
             _semesterService = semesterService;
         }
 
-        public IActionResult AdviserDashboard()
+        public async Task<IActionResult> AdviserDashboard()
         {
+            var advisorEmail = User.Identity.Name;
+            var advisor = await _context.Staffs.FirstOrDefaultAsync(s => s.Email == advisorEmail);
+            int adviseeCount = await _context.Students.CountAsync(s => s.StaffID == advisor.StaffID);
+            // ✅ Group advisees by AcademicYear and get count
+            var adviseeGroups = await _context.Students
+                .Where(s => s.StaffID == advisor.StaffID)
+                .GroupBy(s => s.AcademicYear)
+                .Select(g => new
+                {
+                    AcademicYear = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // ✅ Fetch advisees
+            var adviseeIds = await _context.Students
+                .Where(s => s.StaffID == advisor.StaffID)
+                .Select(s => s.StudentID)
+                .ToListAsync();
+
+            // ✅ Count pending requests for these advisees
+            int pendingRequestsCount = await _context.PendingRegistrations
+                .Where(p => adviseeIds.Contains(p.StudentID) && p.Status == "Pending" && p.IsApprovedByAdvisor == "No")
+                .CountAsync();
+
+            ViewBag.PendingRequests = pendingRequestsCount;
+
+
+            ViewBag.AdvisorName = advisor?.FullName ?? "Unknown";
+            ViewBag.AdvisorEmail = advisor?.Email ?? "Unknown";
+            ViewBag.AdvisorPhone = advisor?.PhoneNo ?? "Unknown";
+            ViewBag.AdviseeCount = adviseeCount;  // <-- pass advisee count
+            ViewBag.AdviseeGroups = adviseeGroups; // passing grouped data
+
             return View("~/Views/Dashboard/Advisor/AdviserDashboard.cshtml");
         }
+
 
         public async Task<IActionResult> AdviseeStudents()
         {
@@ -54,14 +89,24 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 CurrentSemester = _semesterService.GetCurrentSemester(s)
             }).ToList();
 
+            ViewBag.AdvisorName = advisor?.FullName ?? "Unknown"; // 👈 Added
             ViewBag.Students = studentList;
             return View("~/Views/Dashboard/Advisor/AdviseeStudents.cshtml");
+
         }
 
 
-        public IActionResult AdvisorNotification()
+        public async Task<IActionResult> AdvisorNotification()
         {
+            var advisorEmail = User.Identity.Name;
+            var advisor = await _context.Staffs.FirstOrDefaultAsync(s => s.Email == advisorEmail);
+            ViewBag.AdvisorName = advisor?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Advisor/AdvisorNotification.cshtml");
+        }
+
+        public IActionResult AdviseeStudentsResult()
+        {
+            return View("~/Views/Dashboard/Advisor/AdviseeStudentsResult.cshtml");
         }
 
 

@@ -30,12 +30,6 @@
         </div>
     <div class="bottom-links">
         <li class="bottom-items">
-            <a href="#"><i class="fas fa-cog"></i><span>Settings</span></a>
-        </li>
-        <li class="bottom-items">
-            <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
-        </li>
-        <li class="bottom-items">
             <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
         </li>
     </div>
@@ -46,15 +40,55 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Advisor Dashboard</h1>
+            <h1>Coordinator Dashboard</h1>
             <div class="user-info">
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="admin-name">| Admin: John Doe</span>
+                <span id="coordinator-name">@ViewBag.CoordinatorName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>
+
+    <!-- Dashboard Content -->
+        <div class="dashboard-content">
+
+<div class="card personal-details">
+    <h2>Personal details</h2>
+    <div class="details-content">
+        <p><span>Name :</span> - <span>@ViewBag.CoordinatorName</span></p>
+        <p><span>Phone :</span> - <span>@ViewBag.CoordinatorPhone</span></p>
+        <p><span>Email :</span> - <span>@ViewBag.CoordinatorEmail</span></p>
+    </div>
+</div>
+
+<!-- Number of coordinating courses Card -->
+<div class="card total-users-card">
+    <h2>No.of coordinating courses: @ViewBag.CoordinatedCourseCount</h2>
+</div>
+
+
+<!-- Coordinating Courses Summary Card -->
+<div class="card total-users-card">
+    <h2>Coordinated Courses Summary</h2>
+    <div class="details-content">
+        <ul>
+                        @foreach (var e in ViewBag.Enrollments)
+                        {
+                    <li>
+                        <strong>Course:</strong> @e.CourseName <br />
+                        <strong>Academic Year:</strong> @e.AcademicYear <br />
+                        <strong>Enrolled Students:</strong> @e.StudentCount
+                    </li>
+                    <hr />
+                        }
+        </ul>
+    </div>
+</div>
+
+        </div>
+    </div>
+    </div>
 
         
 

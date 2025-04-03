@@ -64,7 +64,6 @@
 
         <!-- Confirmation Message -->
         <div class="confirmation-message" id="confirmationMessage">
-            Registration session created successfully!
         </div>
 
         <!-- Filter Section -->
@@ -75,10 +74,10 @@
                     <label for="semester">Semester</label>
                     <select id="semester">
                         <option value="">Select Semester</option>
-                            @for (int i = 1; i <= 8; i++)
-                            {
-                                <option value="@i">Semester @i</option>
-                            }
+                        @for (int i = 1; i <= 8; i++)
+                        {
+                            <option value="@i">Semester @i</option>
+                        }
                     </select>
                 </div>
 
@@ -86,20 +85,20 @@
                     <label for="department">Department</label>
                     <select id="department">
                         <option value="general">General Program</option>
-                            @foreach (var dept in ViewBag.Departments)
-                            {
-                                <option value="@dept.DepartmentID">@dept.DepartmentName</option>
-                            }
+                        @foreach (var dept in ViewBag.Departments)
+                        {
+                            <option value="@dept.DepartmentID">@dept.DepartmentName</option>
+                        }
                     </select>
                 </div>
 
                 <div class="filter-group">
                     <label for="academic-year">Academic Year</label>
                     <select id="academic-year" multiple>
-                            @foreach (var year in ViewBag.AcademicYears)
-                            {
-                                <option value="@year">@year</option>
-                            }
+                        @foreach (var year in ViewBag.AcademicYears)
+                        {
+                            <option value="@year">@year</option>
+                        }
                     </select>
                     <small>Hold CTRL to select multiple years</small>
                 </div>
@@ -230,8 +229,17 @@
 
         $("#confirmRegistration").click(function () {
             let selectedCourses = [];
-            $("#previewTableBody tr").each(function () {
-                let courseCode = $(this).find("td:eq(0)").text().trim(); // Get Course Code
+
+            // Check if any courses are selected
+            if ($(".course-checkbox:checked").length === 0) {
+                $("#confirmationMessage").removeClass("confirmation-message").addClass("warning-message").text("Please select at least one course before confirming registration.").show();
+                setTimeout(() => $("#confirmationMessage").fadeOut(), 5000);
+                return;
+            }
+
+            // Get selected courses directly from the main table if preview hasn't been used
+            $(".course-checkbox:checked").each(function () {
+                let courseCode = $(this).closest("tr").find("td:eq(1)").text().trim();
                 selectedCourses.push(courseCode);
             });
 
@@ -247,17 +255,18 @@
 
             $.post("/Admin/CreateRegistrationSession", data, function (response) {
                 if (response.success) {
-                    $("#confirmationMessage").show().text(response.message);
+                    $("#confirmationMessage").removeClass("warning-message").addClass("confirmation-message").show().text(response.message);
                     setTimeout(() => $("#confirmationMessage").fadeOut(), 5000);
-
-                    $("#previewModal").fadeOut(); // Close the preview modal
+                    $("#previewModal").fadeOut(); // Close the preview modal if it's open
                     clearAllFields(); // Clear all form fields
-
                 } else {
-                    alert(response.message);
+                    $("#confirmationMessage").removeClass("confirmation-message").addClass("warning-message").show().text(response.message);
+                    setTimeout(() => $("#confirmationMessage").fadeOut(), 5000);
                 }
             }).fail(function (error) {
                 console.error("❌ Error Submitting Registration:", error);
+                $("#confirmationMessage").removeClass("confirmation-message").addClass("warning-message").show().text("An error occurred while processing your request. Please try again.");
+                setTimeout(() => $("#confirmationMessage").fadeOut(), 5000);
             });
         });
 
