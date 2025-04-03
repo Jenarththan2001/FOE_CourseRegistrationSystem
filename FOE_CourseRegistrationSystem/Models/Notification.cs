@@ -6,10 +6,16 @@ namespace FOE_CourseRegistrationSystem.Models
 {
     public enum NotificationType
     {
-        RegistrationSessionOpened,      // AR opens registration
-        CourseRegistrationSubmitted,    // Student submits registration
-        AdvisorApproval,                // Advisor approves/rejects
-        ARApproval                      // AR approves
+        RegistrationSessionOpened,
+        CourseRegistrationSubmitted,
+        AdvisorApproval,
+        ARApproval
+    }
+
+    public enum UserType
+    {
+        Student,
+        Staff
     }
 
     public class Notification
@@ -17,18 +23,15 @@ namespace FOE_CourseRegistrationSystem.Models
         [Key]
         public int NotificationID { get; set; }
 
-        // Message Fields
-        [Required]
-        [MaxLength(1000)]
-        public string ReceiverMessage { get; set; }  // Primary recipient message
+        [Required, MaxLength(1000)]
+        public string ReceiverMessage { get; set; }
 
         [MaxLength(1000)]
-        public string SenderMessage { get; set; }    // Sender's copy (optional)
+        public string SenderMessage { get; set; }
 
         [MaxLength(500)]
-        public string ThirdPartyMessage { get; set; } // For additional recipients (optional)
+        public string ThirdPartyMessage { get; set; }
 
-        // Core Properties
         [Required]
         public NotificationType Type { get; set; }
 
@@ -37,41 +40,37 @@ namespace FOE_CourseRegistrationSystem.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Recipient Configuration
         [Required]
-        public int ReceiverID { get; set; }          // Primary recipient ID
+        public int ReceiverID { get; set; }
 
         [Required]
-        [StringLength(10)]
-        public string ReceiverType { get; set; }      // "Student" or "Staff"
+        public UserType ReceiverType { get; set; }
 
-        // Sender Information (disambiguated)
-        public int? SenderStudentID { get; set; }    // Only set if sender is a student
-        public int? SenderStaffID { get; set; }       // Only set if sender is staff
+        public int? SenderStudentID { get; set; }
+        public int? SenderStaffID { get; set; }
+        public UserType? SenderType { get; set; }
 
-        [StringLength(10)]
-        public string SenderType { get; set; }        // "Student" or "Staff"
+        public int? ThirdPartyStudentID { get; set; }
+        public int? ThirdPartyStaffID { get; set; }
+        public UserType? ThirdPartyType { get; set; }
 
-        // Third Party Recipient (disambiguated)
-        public int? ThirdPartyStudentID { get; set; } // Only set if third party is a student
-        public int? ThirdPartyStaffID { get; set; }   // Only set if third party is staff
-
-        [StringLength(10)]
-        public string ThirdPartyType { get; set; }    // "Student" or "Staff"
-
-        // Special Cases
-        public bool? IsForAllStudents { get; set; }   // Broadcast flag (nullable)
+        public bool? IsForAllStudents { get; set; }
 
         [StringLength(9)]
-        public string AcademicYear { get; set; }      // e.g. "2020/2021" (nullable)
+        public string AcademicYear { get; set; }
 
-        // Related Entities
         public int? RelatedStudentID { get; set; }
         public int? RelatedStaffID { get; set; }
         public int? RelatedSessionID { get; set; }
+
+        [StringLength(20)]
+        public string RelatedCourseCode { get; set; }
+
+        [StringLength(20)]
+        public string RelatedStatus { get; set; }
+
         public int? RelatedPendingRegistrationID { get; set; }
 
-        // Navigation Properties
         [ForeignKey("RelatedStudentID")]
         public Student RelatedStudent { get; set; }
 
@@ -84,14 +83,12 @@ namespace FOE_CourseRegistrationSystem.Models
         [ForeignKey("RelatedPendingRegistrationID")]
         public PendingRegistration RelatedPendingRegistration { get; set; }
 
-        // Disambiguated Sender Relationships
         [ForeignKey("SenderStudentID")]
         public Student SenderStudent { get; set; }
 
         [ForeignKey("SenderStaffID")]
         public Staff SenderStaff { get; set; }
 
-        // Disambiguated Third Party Relationships
         [ForeignKey("ThirdPartyStudentID")]
         public Student ThirdPartyStudent { get; set; }
 
