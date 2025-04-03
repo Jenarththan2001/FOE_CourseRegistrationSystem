@@ -160,8 +160,8 @@ body {
     grid-template-areas:
         "personal-details total-users"
         "personal-details registered-students"
-        "personal-details pending-request"
-        "notifications currently-opened";
+        "personal-details active-courses"
+        "notifications system-logs";
 }
 
 .card {
@@ -188,28 +188,25 @@ body {
     border-left: 5px solid var(--primary-color);
 }
 
-.active-courses-card {
-    grid-area: active-courses;
-    border-left: 5px solid var(--primary-color);
+.total-users-card,
+.registered-students-card h2 {
+    color: var(--primary-color);
 }
 
-.pending-request-card {
-    grid-area: pending-request;
-    border-left: 5px solid var(--primary-color);
+.session-list {
+    list-style-type: none;
+    padding-left: 0;
 }
 
-.currently-opened-card {
-    grid-area: currently-opened;
-    border-left: 5px solid var(--primary-color);
+.session-item {
+    margin-bottom: 5px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.currently-opened-card,
-.pending-request-card,
-.active-courses-card,
-.registered-students-card,
-.total-users-card h2 {
-    color:var(--primary-color);
-}
+    .session-item:last-child {
+        border-bottom: none;
+    }
 
 
 .system-logs-card {
@@ -290,18 +287,18 @@ body {
     }
 
 /* Responsive Design */
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 768px) {
     .dashboard-content {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
-            "personal-details total-users"
-            "personal-details registered-students"
-            "personal-details pending-request"
-            "notifications currently-opened";
+            "personal-details"
+            "total-users"
+            "registered-students"
+            "notifications";
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 375px) {
     .sidebar {
         width: 70px;
     }
@@ -331,10 +328,9 @@ body {
     .dashboard-content {
         grid-template-columns: 1fr;
         grid-template-areas:
-            "personal-details" "total-users"
+            "personal-details"
+            "total-users"
             "registered-students"
-            "pending-request"
-            "currently-opened"
             "notifications";
     }
 }

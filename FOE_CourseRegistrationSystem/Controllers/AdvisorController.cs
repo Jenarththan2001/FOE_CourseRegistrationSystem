@@ -104,6 +104,11 @@ namespace FOE_CourseRegistrationSystem.Controllers
             return View("~/Views/Dashboard/Advisor/AdvisorNotification.cshtml");
         }
 
+        public IActionResult AdviseeStudentsResult()
+        {
+            return View("~/Views/Dashboard/Advisor/AdviseeStudentsResult.cshtml");
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> GetPendingRegistrations(int studentId)
