@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adviser Dashboard</title>
     <link rel="stylesheet" href="~/css/AdviseeCourseRegistration.css">
-    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -59,8 +59,13 @@
     <div class="main-content">
 
         <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search by RegNo">
+        <div class="filter-section">
+            <div class="filter-container">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search by Reg no...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
         </div>
 
         <!-- Students Table -->
@@ -73,28 +78,32 @@
                         <th>Academic Year</th>
                         <th>Current Semester</th>
                         <th>Registration Details</th>
+                        <th>Full Details</th>
                     </tr>
                 </thead>
-            <tbody id="student-table-body">
+                <tbody id="student-table-body">
                     @foreach (var student in ViewBag.Students)
                     {
-        <tr>
-            <td>@student.StudentID</td>
-            <td>@student.FullName</td>
-            <td>@student.AcademicYear</td>
-            <td>N/A</td> <!-- Current Semester: optional or not stored -->
-            <td>
-                <button class="action-button view-details-button"
-                        data-regno="@student.StudentID"
-                        data-name="@student.FullName"
-                        data-year="@student.AcademicYear"
-                        data-semester="N/A">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </td>
-        </tr>
+                        <tr>
+                            <td>@student.StudentID</td>
+                            <td>@student.FullName</td>
+                            <td>@student.AcademicYear</td>
+                            <td>@student.CurrentSemester</td>
+                            <td>
+                                <button class="action-button view-details-button"
+                                        data-regno="@student.StudentID"
+                                        data-name="@student.FullName"
+                                        data-year="@student.AcademicYear"
+                                        data-semester="@student.CurrentSemester">
+                                    view
+                                </button>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("AdviseeStudentsResult", "Advisor")" class="view-button view-full-details-button">view</a>
+                            </td>
+                        </tr>
                     }
-</tbody>
+                </tbody>
 
             </table>
         </div>
@@ -128,10 +137,13 @@
 
             <!-- Filter Section -->
             <div class="filter-section">
-                <label for="semesterFilter"><strong>Filter by Semester:</strong></label>
-<select id="semesterFilter" onchange="filterCourses()">
-    <option value="all">All</option>
-</select>
+                <div class="filter-container">
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search by Reg no...">
+                        <button id="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
 
             </div>
             <!-- Course Registration Table -->
@@ -149,7 +161,6 @@
                         </tr>
                     </thead>
                     <tbody id="courseTable">
-                      
                     </tbody>
                 </table>
             </div>
@@ -165,282 +176,286 @@
     </div>
 
     <script>
-        // Function to update time
-        function updateTime() {
-            const currentDate = new Date();
-            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
-            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
-        }
+                // Function to update time
+                function updateTime() {
+                    const currentDate = new Date();
+                    document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+                    document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+                }
 
-        // Update time every second
-        setInterval(updateTime, 1000);
+                // Update time every second
+                setInterval(updateTime, 1000);
 
-        // Initial call to set the time immediately
-        updateTime();
+                // Initial call to set the time immediately
+                updateTime();
 
-        // Function to filter courses based on semester
-        function filterCourses() {
-            const selectedSemester = document.getElementById("semesterFilter").value;
-            const courseRows = document.querySelectorAll("#courseTable tr");
+                // Function to filter courses based on semester
+                        // Add event listener to the search button
+        document.getElementById("search-btn").addEventListener("click", function() {
+            filterCourses();
+        });
 
-            courseRows.forEach(row => {
-                const semester = row.getAttribute("data-semester");
-                if (selectedSemester === "all" || selectedSemester === semester) {
-                    row.style.display = "";
+        function submitApprovals() {
+            const courses = [];
+            const rows = document.querySelectorAll('#courseTable tr');
+            const regno = document.getElementById("modal-regno").textContent.trim();
+
+            // Gather course statuses
+            rows.forEach(row => {
+                const courseCode = row.querySelector('td:nth-child(1)').textContent.trim();
+                const statusSpan = row.querySelector('td:nth-child(6) span');
+                const status = statusSpan ? statusSpan.textContent.trim() : "Pending";
+
+                courses.push({
+                    courseCode: courseCode,
+                    status: status
+                });
+            });
+
+            if (courses.length === 0) {
+                alert("⚠️ No courses to submit.");
+                return;
+            }
+
+            console.log("Submitting approvals:", { studentId: regno, courses });
+
+            fetch('/Advisor/SubmitApprovals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    studentId: regno,
+                    courses: courses
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Server returned status ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log("✅ Server response:", data);
+                if (data.success) {
+                    alert("✅ Approvals submitted successfully!");
+                    document.getElementById("registrationModal").style.display = "none";
                 } else {
-                    row.style.display = "none";
+                    alert("❌ Failed to submit: " + (data.message || "Unknown error"));
+                }
+            })
+            .catch(error => {
+                console.error("❌ Error during submission:", error);
+                alert("❌ Submission error occurred. Check console for details.");
+            });
+        }
+
+
+
+                document.addEventListener("DOMContentLoaded", function() {
+                    // Get references to the search input and table body
+                    const searchInput = document.getElementById("search-input");
+                    const tableBody = document.getElementById("student-table-body");
+                    const modal = document.getElementById("registrationModal");
+                    const closeBtn = document.querySelector(".close");
+                    const submitBtn = document.getElementById("submitApprovalBtn");
+
+                    // Student info elements in the modal
+                    const modalRegNo = document.getElementById("modal-regno");
+                    const modalName = document.getElementById("modal-name");
+                    const modalYear = document.getElementById("modal-year");
+                    const modalSemester = document.getElementById("modal-semester");
+
+                    // Bind the submit button click event
+                    submitBtn.addEventListener("click", submitApprovals);
+
+                            // Function to filter the table rows based on the search input
+                // Function to filter the table rows based on the search input
+        function filterTableRows(searchTerm) {
+            const rows = tableBody.querySelectorAll("tr");
+            rows.forEach(row => {
+                const regno = row.cells[0].textContent.toLowerCase(); // Get the Regno from the first cell
+                if (regno.includes(searchTerm.toLowerCase())) {
+                    row.style.display = ""; // Show the row if the Regno matches the search term
+                } else {
+                    row.style.display = "none"; // Hide the row if the Regno does not match
                 }
             });
         }
 
-function submitApprovals() {
-    const courses = [];
-    const rows = document.querySelectorAll('#courseTable tr');
-    const regno = document.getElementById("modal-regno").textContent.trim();
+        // Get the search button element
+        const searchBtn = document.getElementById("search-btn");
 
-    // Gather course statuses
-    rows.forEach(row => {
-        const courseCode = row.querySelector('td:nth-child(1)').textContent.trim();
-        const statusSpan = row.querySelector('td:nth-child(6) span');
-        const status = statusSpan ? statusSpan.textContent.trim() : "Pending";
-
-        courses.push({
-            courseCode: courseCode,
-            status: status
+        // Event listener for the search button
+        searchBtn.addEventListener("click", function() {
+            filterTableRows(searchInput.value);
         });
-    });
 
-    if (courses.length === 0) {
-        alert("⚠️ No courses to submit.");
-        return;
-    }
-
-    console.log("Submitting approvals:", { studentId: regno, courses });
-
-    fetch('/Advisor/SubmitApprovals', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            studentId: regno,
-            courses: courses
-        })
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Server returned status ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        console.log("✅ Server response:", data);
-        if (data.success) {
-            alert("✅ Approvals submitted successfully!");
-            document.getElementById("registrationModal").style.display = "none";
-        } else {
-            alert("❌ Failed to submit: " + (data.message || "Unknown error"));
-        }
-    })
-    .catch(error => {
-        console.error("❌ Error during submission:", error);
-        alert("❌ Submission error occurred. Check console for details.");
-    });
-}
+        // Event listener for the search input to detect when it's cleared
+        searchInput.addEventListener("input", function() {
+            if (searchInput.value === "") {
+                filterTableRows(""); // Show all rows when input is empty
+            }
+        });
 
 
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Get references to the search input and table body
-            const searchInput = document.getElementById("search-input");
-            const tableBody = document.getElementById("student-table-body");
-            const modal = document.getElementById("registrationModal");
-            const closeBtn = document.querySelector(".close");
-            const submitBtn = document.getElementById("submitApprovalBtn");
+                    // Function to open the modal and populate student details
+        function openRegistrationModal(regno, name, year, semester) {
+            modalRegNo.textContent = regno;
+            modalName.textContent = name;
+            modalYear.textContent = year;
+            modalSemester.textContent = semester;
+            modal.style.display = "block";
 
-            // Student info elements in the modal
-            const modalRegNo = document.getElementById("modal-regno");
-            const modalName = document.getElementById("modal-name");
-            const modalYear = document.getElementById("modal-year");
-            const modalSemester = document.getElementById("modal-semester");
+            const courseTable = document.getElementById("courseTable");
+            const semesterFilter = document.getElementById("semesterFilter");
+            courseTable.innerHTML = ""; // Clear existing rows
+            semesterFilter.innerHTML = '<option value="all">All</option>'; // Reset semester filter
 
-            // Bind the submit button click event
-            submitBtn.addEventListener("click", submitApprovals);
+            fetch(`/Advisor/GetPendingRegistrations?studentId=${regno}`)
+                .then(res => res.json())
+                .then(courses => {
+                    const semesterSet = new Set(); // To track unique semesters
 
-            // Function to filter the table rows based on the search input
-            function filterTableRows(searchTerm) {
-                const rows = tableBody.querySelectorAll("tr");
-                rows.forEach(row => {
-                    const regno = row.cells[0].textContent.toLowerCase(); // Get the Regno from the first cell
-                    if (regno.includes(searchTerm.toLowerCase())) {
-                        row.style.display = ""; // Show the row if the Regno matches the search term
-                    } else {
-                        row.style.display = "none"; // Hide the row if the Regno does not match
-                    }
+                    courses.forEach(course => {
+                        semesterSet.add(course.semester); // Collect semester
+
+                        const row = document.createElement("tr");
+                        row.setAttribute("data-semester", course.semester);
+
+                        row.innerHTML = `
+                            <td>${course.courseCode}</td>
+                            <td>${course.courseName}</td>
+                            <td>${course.credits}</td>
+                            <td>N/A</td> <!-- Coordinator set to N/A -->
+                            <td>${course.prerequisites.length > 0 ? course.prerequisites.join(", ") : "None"}</td>
+                            <td><span class="course-pending">Pending</span></td>
+                            <td class="course-status">
+                                <button class="action-button approve-course-button" data-code="${course.courseCode}">Approve</button>
+                                <button class="action-button reject-course-button" data-code="${course.courseCode}">Reject</button>
+                            </td>
+                        `;
+                        courseTable.appendChild(row);
+                    });
+
+                    // Populate semester filter dynamically
+                    semesterSet.forEach(sem => {
+                        const option = document.createElement("option");
+                        option.value = sem;
+                        option.textContent = sem;
+                        semesterFilter.appendChild(option);
+                    });
+
+                    updateTotalCredits(); // Refresh credit count
+                })
+                .catch(err => {
+                    console.error("❌ Error loading registrations", err);
                 });
-            }
-
-            // Event listener for the search input
-            searchInput.addEventListener("input", function() {
-                filterTableRows(searchInput.value);
-            });
-
-            // Function to open the modal and populate student details
-function openRegistrationModal(regno, name, year, semester) {
-    modalRegNo.textContent = regno;
-    modalName.textContent = name;
-    modalYear.textContent = year;
-    modalSemester.textContent = semester;
-    modal.style.display = "block";
-
-    const courseTable = document.getElementById("courseTable");
-    const semesterFilter = document.getElementById("semesterFilter");
-    courseTable.innerHTML = ""; // Clear existing rows
-    semesterFilter.innerHTML = '<option value="all">All</option>'; // Reset semester filter
-
-    fetch(`/Advisor/GetPendingRegistrations?studentId=${regno}`)
-        .then(res => res.json())
-        .then(courses => {
-            const semesterSet = new Set(); // To track unique semesters
-
-            courses.forEach(course => {
-                semesterSet.add(course.semester); // Collect semester
-
-                const row = document.createElement("tr");
-                row.setAttribute("data-semester", course.semester);
-
-                row.innerHTML = `
-                    <td>${course.courseCode}</td>
-                    <td>${course.courseName}</td>
-                    <td>${course.credits}</td>
-                    <td>N/A</td> <!-- Coordinator set to N/A -->
-                    <td>${course.prerequisites.length > 0 ? course.prerequisites.join(", ") : "None"}</td>
-                    <td><span class="course-pending">Pending</span></td>
-                    <td class="course-status">
-                        <button class="action-button approve-course-button" data-code="${course.courseCode}">Approve</button>
-                        <button class="action-button reject-course-button" data-code="${course.courseCode}">Reject</button>
-                    </td>
-                `;
-                courseTable.appendChild(row);
-            });
-
-            // Populate semester filter dynamically
-            semesterSet.forEach(sem => {
-                const option = document.createElement("option");
-                option.value = sem;
-                option.textContent = sem;
-                semesterFilter.appendChild(option);
-            });
-
-            updateTotalCredits(); // Refresh credit count
-        })
-        .catch(err => {
-            console.error("❌ Error loading registrations", err);
-        });
-}
+        }
 
 
 
-            // Event listener for the view details buttons
-            tableBody.addEventListener("click", function(event) {
-                const button = event.target.closest(".view-details-button");
-                if (button) {
-                    const regno = button.getAttribute("data-regno");
-                    const name = button.getAttribute("data-name");
-                    const year = button.getAttribute("data-year");
-                    const semester = button.getAttribute("data-semester");
-                    openRegistrationModal(regno, name, year, semester);
-                }
-            });
+                    // Event listener for the view details buttons
+                    tableBody.addEventListener("click", function(event) {
+                        const button = event.target.closest(".view-details-button");
+                        if (button) {
+                            const regno = button.getAttribute("data-regno");
+                            const name = button.getAttribute("data-name");
+                            const year = button.getAttribute("data-year");
+                            const semester = button.getAttribute("data-semester");
+                            openRegistrationModal(regno, name, year, semester);
+                        }
+                    });
 
-            // Event listener for closing the modal
-            closeBtn.addEventListener("click", function() {
-                modal.style.display = "none";
-            });
+                    // Event listener for closing the modal
+                    closeBtn.addEventListener("click", function() {
+                        modal.style.display = "none";
+                    });
 
-            // Close the modal if the user clicks outside of it
-            window.addEventListener("click", function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            });
+                    // Close the modal if the user clicks outside of it
+                    window.addEventListener("click", function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    });
 
-            // Function to handle course approval
-            function approveCourse(button) {
-                const row = button.closest('tr');
-                const statusCell = row.querySelector('td:nth-child(6)');
-                const actionsCell = row.querySelector('td:nth-child(7)');
+                    // Function to handle course approval
+                    function approveCourse(button) {
+                        const row = button.closest('tr');
+                        const statusCell = row.querySelector('td:nth-child(6)');
+                        const actionsCell = row.querySelector('td:nth-child(7)');
 
-                // Store original status
-                row.dataset.originalStatus = statusCell.innerHTML;
+                        // Store original status
+                        row.dataset.originalStatus = statusCell.innerHTML;
 
-                statusCell.innerHTML = '<span class="course-approved">Approved</span>';
-                actionsCell.innerHTML = '<button class="action-button undo-course-button">Undo</button>';
+                        statusCell.innerHTML = '<span class="course-approved">Approved</span>';
+                        actionsCell.innerHTML = '<button class="action-button undo-course-button">Undo</button>';
 
-                updateTotalCredits();
-            }
-
-            // Function to handle course rejection
-            function rejectCourse(button) {
-                const row = button.closest('tr');
-                const statusCell = row.querySelector('td:nth-child(6)');
-                const actionsCell = row.querySelector('td:nth-child(7)');
-
-                // Store original status
-                row.dataset.originalStatus = statusCell.innerHTML;
-
-                statusCell.innerHTML = '<span class="course-rejected">Rejected</span>';
-                actionsCell.innerHTML = '<button class="action-button undo-course-button">Undo</button>';
-
-                updateTotalCredits();
-            }
-
-            // Function to handle undo action
-            function undoCourseAction(button) {
-                const row = button.closest('tr');
-                const statusCell = row.querySelector('td:nth-child(6)');
-                const actionsCell = row.querySelector('td:nth-child(7)');
-
-                // Restore original status
-                statusCell.innerHTML = row.dataset.originalStatus;
-                actionsCell.innerHTML = `
-                    <button class="action-button approve-course-button" data-code="${row.querySelector('td:nth-child(1)').textContent}">Approve</button>
-                    <button class="action-button reject-course-button" data-code="${row.querySelector('td:nth-child(1)').textContent}">Reject</button>
-                `;
-
-                updateTotalCredits();
-            }
-
-            // Event delegation for approve, reject, and undo buttons
-            document.getElementById('courseTable').addEventListener('click', function(e) {
-                if (e.target.classList.contains('approve-course-button')) {
-                    approveCourse(e.target);
-                } else if (e.target.classList.contains('reject-course-button')) {
-                    rejectCourse(e.target);
-                } else if (e.target.classList.contains('undo-course-button')) {
-                    undoCourseAction(e.target);
-                }
-            });
-
-            // Function to update total credits
-            function updateTotalCredits() {
-                const rows = document.querySelectorAll('#courseTable tr');
-                let totalCredits = 0;
-
-                rows.forEach(row => {
-                    const statusSpan = row.querySelector('td:nth-child(6) span');
-                    if (statusSpan && statusSpan.classList.contains('course-approved')) {
-                        const credits = parseInt(row.querySelector('td:nth-child(3)').textContent);
-                        totalCredits += credits;
+                        updateTotalCredits();
                     }
+
+                    // Function to handle course rejection
+                    function rejectCourse(button) {
+                        const row = button.closest('tr');
+                        const statusCell = row.querySelector('td:nth-child(6)');
+                        const actionsCell = row.querySelector('td:nth-child(7)');
+
+                        // Store original status
+                        row.dataset.originalStatus = statusCell.innerHTML;
+
+                        statusCell.innerHTML = '<span class="course-rejected">Rejected</span>';
+                        actionsCell.innerHTML = '<button class="action-button undo-course-button">Undo</button>';
+
+                        updateTotalCredits();
+                    }
+
+                    // Function to handle undo action
+                    function undoCourseAction(button) {
+                        const row = button.closest('tr');
+                        const statusCell = row.querySelector('td:nth-child(6)');
+                        const actionsCell = row.querySelector('td:nth-child(7)');
+
+                        // Restore original status
+                        statusCell.innerHTML = row.dataset.originalStatus;
+                        actionsCell.innerHTML = `
+                            <button class="action-button approve-course-button" data-code="${row.querySelector('td:nth-child(1)').textContent}">Approve</button>
+                            <button class="action-button reject-course-button" data-code="${row.querySelector('td:nth-child(1)').textContent}">Reject</button>
+                        `;
+
+                        updateTotalCredits();
+                    }
+
+                    // Event delegation for approve, reject, and undo buttons
+                    document.getElementById('courseTable').addEventListener('click', function(e) {
+                        if (e.target.classList.contains('approve-course-button')) {
+                            approveCourse(e.target);
+                        } else if (e.target.classList.contains('reject-course-button')) {
+                            rejectCourse(e.target);
+                        } else if (e.target.classList.contains('undo-course-button')) {
+                            undoCourseAction(e.target);
+                        }
+                    });
+
+                    // Function to update total credits
+                    function updateTotalCredits() {
+                        const rows = document.querySelectorAll('#courseTable tr');
+                        let totalCredits = 0;
+
+                        rows.forEach(row => {
+                            const statusSpan = row.querySelector('td:nth-child(6) span');
+                            if (statusSpan && statusSpan.classList.contains('course-approved')) {
+                                const credits = parseInt(row.querySelector('td:nth-child(3)').textContent);
+                                totalCredits += credits;
+                            }
+                        });
+
+                        document.getElementById('totalCredits').textContent = totalCredits;
+                    }
+
+                    // Initial call to update total credits
+                    updateTotalCredits();
                 });
-
-                document.getElementById('totalCredits').textContent = totalCredits;
-            }
-
-            // Initial call to update total credits
-            updateTotalCredits();
-        });
     </script>
 </body>
 

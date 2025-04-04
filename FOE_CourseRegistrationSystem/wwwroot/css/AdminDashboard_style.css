@@ -105,82 +105,6 @@ body {
         border-radius: 5px;
     }
 
-
-/*Personal Details Card*/
-.personal-details-card {
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-    .personal-details-card .card-header {
-        margin-bottom: 20px;
-    }
-
-        .personal-details-card .card-header h2 {
-            color: var(--primary-color);
-            font-size: 1.5em;
-            margin: 0;
-        }
-
-    .personal-details-card .card-body .form-group {
-        margin-bottom: 15px;
-    }
-
-    .personal-details-card .card-body label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 5px;
-        color: var(--text-color);
-    }
-    .personal-details-card .card-body input[type="text"],
-    .personal-details-card .card-body input[type="email"],
-    .personal-details-card .card-body select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #fff;
-        color: var(--text-color);
-        box-sizing: border-box;
-    }
-
-        .personal-details-card .card-body input[readonly],
-        .personal-details-card .card-body select[disabled] {
-            background-color: #eee;
-            cursor: not-allowed;
-        }
-
-
-    .personal-details-card .card-body input[type="text"],
-    .personal-details-card .card-body input[type="date"],
-    .personal-details-card .card-body select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #fff;
-        color: var(--text-color);
-        box-sizing: border-box;
-    }
-
-        .personal-details-card .card-body input[readonly],
-        .personal-details-card .card-body select[disabled] {
-            background-color: #eee;
-            cursor: not-allowed;
-        }
-
-    .personal-details-card .card-body .form-columns {
-        display: flex;
-        gap: 20px;
-    }
-
-        .personal-details-card .card-body .form-columns .form-column {
-            flex: 1;
-        }
-
 /* Main Content Styles */
 .main-content {
     flex: 1;
@@ -231,11 +155,13 @@ body {
 /* Dashboard Content Styles */
 .dashboard-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     grid-template-areas:
-        "total-users registered-students active-courses"
-        "system-logs system-logs notifications";
+        "personal-details total-users"
+        "personal-details registered-students"
+        "personal-details pending-request"
+        "notifications currently-opened";
 }
 
 .card {
@@ -267,6 +193,25 @@ body {
     border-left: 5px solid var(--primary-color);
 }
 
+.pending-request-card {
+    grid-area: pending-request;
+    border-left: 5px solid var(--primary-color);
+}
+
+.currently-opened-card {
+    grid-area: currently-opened;
+    border-left: 5px solid var(--primary-color);
+}
+
+.currently-opened-card,
+.pending-request-card,
+.active-courses-card,
+.registered-students-card,
+.total-users-card h2 {
+    color:var(--primary-color);
+}
+
+
 .system-logs-card {
     grid-area: system-logs;
     border-left: 5px solid var(--primary-color);
@@ -296,14 +241,63 @@ body {
         color: var(--chart-yellow);
     }
 
+
+/* Chart Styles */
+.chart-card {
+    grid-area: chart-card;
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(157, 157, 157, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    ?width: 100%; /* Adjust width based on grid */
+}
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+.chart {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.bar {
+    width: 20%; /* Adjust based on number of bars */
+    position: relative;
+}
+
+    .bar::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+    }
+
+.labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Match chart width */
+    margin: 0 auto;
+}
+
+    .labels span {
+        font-size: 12px;
+    }
+
 /* Responsive Design */
 @media screen and (max-width: 992px) {
     .dashboard-content {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
-            "total-users registered-students"
-            "active-courses system-logs"
-            "notifications notifications";
+            "personal-details total-users"
+            "personal-details registered-students"
+            "personal-details pending-request"
+            "notifications currently-opened";
     }
 }
 
@@ -337,41 +331,32 @@ body {
     .dashboard-content {
         grid-template-columns: 1fr;
         grid-template-areas:
-            "total-users"
+            "personal-details" "total-users"
             "registered-students"
-            "active-courses"
-            "system-logs"
+            "pending-request"
+            "currently-opened"
             "notifications";
     }
 }
-/* Edit Button Styling */
-.edit-button {
-    background-color: var(--primary-color); /* Primary color */
-    color: white; /* Text color */
-    border: none; /* Remove border */
-    padding: 10px 20px; /* Padding for size */
-    font-size: 16px; /* Font size */
-    font-weight: 500; /* Make text bold */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and click transitions */
+
+.personal-details {
+    grid-area: personal-details;
+    background-color: #fff;
+    border-left: 5px solid var(--primary-color);
 }
 
-/* Hover Effect */
-.edit-button:hover {
-    background-color: var(--secondary-color); /* Change to secondary color on hover */
-    transform: translateY(-2px); /* Slightly lift the button on hover */
+    .personal-details h2 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+
+.details-content p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
 }
 
-/* Active/Pressed Effect */
-.edit-button:active {
-    transform: translateY(1px); /* Slightly press the button on click */
-}
-
-/* Disabled State (Optional) */
-.edit-button:disabled {
-    background-color: #ccc; /* Gray background for disabled state */
-    color: #666; /* Dimmed text color */
-    cursor: not-allowed; /* Show 'not allowed' cursor for disabled state */
-    opacity: 0.7; /* Slightly transparent look */
-}
+    .details-content p span {
+        font-weight: 600;
+    }

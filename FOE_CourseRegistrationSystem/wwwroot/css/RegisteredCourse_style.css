@@ -256,20 +256,32 @@ th, td {
     gap: 5px;
 }
 
-    .page-numbers button {
+    .page-numbers a {
         min-width: 32px;
         height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0;
+        text-decoration: none;
+        color: #333;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        transition: all 0.3s;
     }
 
-        .page-numbers button.active {
+        .page-numbers a:hover {
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
         }
+
+        .page-numbers a.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
 
 /* Approval Status */
 .status-approved {

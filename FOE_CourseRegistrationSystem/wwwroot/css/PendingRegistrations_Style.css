@@ -121,7 +121,6 @@
 
 #admin-name, #date-time {
     margin-left: 10px;
-    color: #7f8c8d;
 }
 
 .back-btn {
@@ -388,7 +387,7 @@ tr:hover {
     cursor: pointer;
     margin: 2px;
     transition: all 0.3s ease-in-out;
-    background-color:transparent;
+    background-color: transparent;
 }
 
 /* ✅ Approve Button */

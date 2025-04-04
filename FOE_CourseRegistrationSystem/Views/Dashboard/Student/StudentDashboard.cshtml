@@ -1,9 +1,15 @@
-﻿@{
-    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
-    double gpa = (double)ViewData["GPA"];
-    int totalCreditsEarned = (int)ViewData["TotalCreditsEarned"];
-    int remainingCredits = (int)ViewData["RemainingCredits"];
+﻿@using FOE_CourseRegistrationSystem.Models
+
+@{
+    var student = ViewData["Student"] as Student;
+    double gpa = ViewData["GPA"] != null ? (double)ViewData["GPA"] : 0.0;
+    int totalCreditsEarned = ViewData["TotalCreditsEarned"] != null ? (int)ViewData["TotalCreditsEarned"] : 0;
+    int remainingCredits = ViewData["RemainingCredits"] != null ? (int)ViewData["RemainingCredits"] : 0;
+    int trackedCredits = ViewData["TrackedCredits"] != null ? (int)ViewData["TrackedCredits"] : 0;
+
+    Layout = null;
 }
+
 @{
     Layout = null;
 }
@@ -60,9 +66,9 @@
                 <h1>Student - Dashboard</h1>
                 <div class="user-info">
                     <div class="profile-pic">
-                        <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                        <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                     </div>
-                    <span id="student-id">| @student.StudentID</span>
+                    <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
                     <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
                 </div>
             </div>
@@ -79,6 +85,7 @@
                         <p><span>Email :</span> - <span>@student.Email</span></p>
                         <p><span>Address :</span> - <span>@student.PermanentAddress</span></p>
                         <p><span>Advisor :</span> - <span>@student.Advisor?.FullName</span></p>
+                        <p><span>Current Semester :</span> - <span>@ViewData["CurrentSemester"]</span></p>
                     </div>
                 </div>
 
@@ -93,18 +100,51 @@
                     <canvas id="creditsChart"></canvas>
                 </div>
 
-                <!-- Notification Card -->
-                <div class="card notification-card">
-                    <div class="notification-content">
-                        <p>New semesters are open for registration</p>
-                        <i class="fas fa-bell"></i>
+<!-- Notification Card -->
+               <!-- Notification Card -->
+@if (ViewData["OpenSessions"] is List<FOE_CourseRegistrationSystem.Models.RegistrationSession> sessions && sessions.Any())
+{
+    <div class="card notification-card">
+        <div class="notification-content">
+            <h3>The following registration sessions are open:</h3>
+            <div class="session-list">
+                @foreach (var s in sessions)
+                {
+                    <div class="session-item">
+                        Semester @s.Semester | Closing Date: @s.EndDate.ToString("yyyy-MM-dd")
                     </div>
-                </div>
+                }
+            </div>
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card notification-card">
+        <div class="notification-content">
+            <p>No registration session is currently open.</p>
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+}
+
+
 
                 <!-- Total Credits Card -->
                 <div class="card total-credits-card">
                     <h2>Total Credits Earned : @totalCreditsEarned / 153</h2>
                 </div>
+
+<!-- Credit Limit Card -->
+                @{
+                    int currentSem = int.TryParse(ViewData["CurrentSemester"]?.ToString(), out int sem) ? sem : 0;
+                    int nextSem = currentSem + 1;
+                }
+<div class="card credit-limit-card">
+    <h2>Credits Limit for Semester @nextSem : @trackedCredits / 24 </h2>
+</div>
+
             </div>
         </div>
     </div>

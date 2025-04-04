@@ -1,5 +1,6 @@
 ﻿@{
     Layout = null;
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -51,9 +52,9 @@
             <h1>FAQs</h1>
             <div class="user-info">
                 <div class="profile-pic">
-                    <img src="~/images/student1.png" alt="Student Profile">
+                   <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="student-id">| 2020CS001</span>
+                <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>

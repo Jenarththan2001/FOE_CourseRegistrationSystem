@@ -21,6 +21,8 @@ namespace FOE_CourseRegistrationSystem.Data
         public DbSet<RegistrationSession> RegistrationSessions { get; set; }
         public DbSet<RegistrationSessionCourse> RegistrationSessionCourses { get; set; }
         public DbSet<PendingRegistration> PendingRegistrations { get; set; }
+        public DbSet<AcademicSchedule> AcademicSchedules { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -163,6 +165,12 @@ namespace FOE_CourseRegistrationSystem.Data
                 .WithMany()
                 .HasForeignKey(pr => pr.StudentID)
                 .OnDelete(DeleteBehavior.NoAction); // ✅ Prevents multiple cascade paths
+
+            modelBuilder.Entity<PendingRegistration>()
+    .HasOne(pr => pr.CourseOffering)
+    .WithMany()
+    .HasForeignKey(pr => pr.CourseOfferingID)
+    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

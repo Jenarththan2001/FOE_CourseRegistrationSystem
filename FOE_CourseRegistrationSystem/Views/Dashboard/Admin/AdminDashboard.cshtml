@@ -29,18 +29,15 @@
                     <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
                 </li>
                 <li>
-                    <a href="@Url.Action("CourseOffering","Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
                 </li>
                 <li>
-                    <a href="@Url.Action("AdvisorDetails" , "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
                 </li>
         </div>
         <div class="bottom-links">
             <li class="bottom-items">
                 <a href="@Url.Action("AdminNotification", "Admin")"><i class="fas fa-bell"></i><span>Notifications</span></a>
-            </li>
-            <li class="bottom-items">
-                <a href="#"><i class="fas fa-question-circle"></i><span>Help</span></a>
             </li>
             <li class="bottom-items">
                 <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
@@ -58,113 +55,62 @@
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="admin-name">| Admin: John Doe</span>
+                <span id="admin-name">@ViewBag.AdminName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>
 
-        <!-- Personal Details Card (Combined) -->
-        <div class="card personal-details-card">
-            <div class="card-header">
-                <h2>Personal Details</h2>
-            </div>
-            <div class="card-body">
-                <div class="form-columns">
-                    <div class="form-column">
-                        <div class="form-group">
-                            <label for="firstName">First Name:</label>
-                            <input type="text" id="firstName" value="Puvinthan" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name:</label>
-                            <input type="text" id="lastName" value="Selvanayakam" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="staffID">Staff ID:</label>
-                            <input type="text" id="staffID" value="18" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="nic">NIC:</label>
-                            <input type="text" id="nic" value="991234501V" readonly>
-                        </div>
-                    </div>
-                    <div class="form-column">
-                        <div class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" value="puvi@eng.jfn.ac.lk" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="phoneNo">Phone No:</label>
-                            <input type="text" id="phoneNo" value="0712345678" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="gender">Gender:</label>
-                            <select id="gender" disabled>
-                                <option value="male">Male</option>
-                            </select>
-                        </div>
-                        <div class="form-group edit-button-container">
-                            <button class="edit-button" onclick="toggleEdit(this)">Edit</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
         <!-- Dashboard Content -->
         <div class="dashboard-content">
+
+            <div class="card personal-details">
+                <h2>Personal details</h2>
+                <div class="details-content">
+                    <p><span>Name :</span> - <span>@ViewBag.AdminName</span></p>
+                    <p><span>Phone :</span> - <span>@ViewBag.AdminPhone</span></p>
+                    <p><span>Email :</span> - <span>@ViewBag.AdminEmail</span></p>
+                </div>
+            </div>
+
             <!-- Total Users Card -->
             <div class="card total-users-card">
-                <h2>Lecturers: 30</h2>
+                <h2>Lecturers: @ViewBag.TotalLecturers</h2>
             </div>
+
 
             <!-- Registered Students Card -->
             <div class="card registered-students-card">
-                <h2>Students: 250</h2>
+                <h2>Students: @ViewBag.TotalStudents</h2>
             </div>
 
-            <!-- Active Courses Card -->
-            <div class="card active-courses-card">
-                <h2>Active Courses: 24</h2>
+
+
+            <!-- Pending request Card -->
+            <div class="card pending-request-card">
+                <h2>Pending request: @ViewBag.TotalPendingRequests</h2>
             </div>
 
+
+            <!-- Currently Opened Card -->
+            <div class="card currently-opened-card">
+                <h2>Currently opened session: @ViewBag.TotalOpenSessions</h2>
+            </div>
 
 
             <!-- Notifications Card -->
+            <!-- Notifications Card -->
             <div class="card notification-card">
                 <div class="notification-content">
-                    <p>3 new user registration requests pending approval</p>
+                    <p>@ViewBag.TotalPendingRequests registration requests pending approval</p>
                     <i class="fas fa-bell"></i>
                 </div>
             </div>
+
         </div>
     </div>
     </div>
 
     <script>
-             function toggleEdit(button) {
-            const cardBody = button.closest('.card-body');
-            const isReadOnly = cardBody.querySelector('#firstName').readOnly;
-
-            // Toggle read-only state for input elements
-            const inputs = cardBody.querySelectorAll('input[type="text"], input[type="email"], select');
-            inputs.forEach(input => {
-                input.readOnly = !isReadOnly;
-                input.disabled = !isReadOnly; // Also toggle the disabled state for select elements
-            });
-
-            // Change appearance based on edit mode
-            if (isReadOnly) {
-                // Change to edit mode
-                button.textContent = 'Save';
-                cardBody.classList.add('edit-mode'); // Add class for edit mode styles
-            } else {
-                // Change to read-only mode
-                button.textContent = 'Edit';
-                cardBody.classList.remove('edit-mode'); // Remove edit mode styles
-            }
-        }
         function updateTime() {
             const currentDate = new Date();
             document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
@@ -177,7 +123,7 @@
         // Initial call to set the time immediately
         updateTime();
 
-        
+
     </script>
 </body>
 

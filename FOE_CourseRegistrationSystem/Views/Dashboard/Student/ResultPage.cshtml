@@ -1,6 +1,7 @@
 ﻿@{
     var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
     var results = ViewData["Results"] as List<FOE_CourseRegistrationSystem.Models.Result>;
+    Layout = null;
 }
 @{
     Layout = null;
@@ -58,9 +59,9 @@
                 <h1>Student - Results</h1>
                 <div class="user-info">
                     <div class="profile-pic">
-                        <img id="student-profile" src="~/images/student1.png" alt="Student Profile">
+                       <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                     </div>
-                    <span id="student-id">| @student.StudentID</span>
+                    <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
                     <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
                 </div>
             </div>

@@ -134,14 +134,6 @@ body {
         margin-left: 10px;
     }
 
-.truncate {
-    display: inline-block;
-    max-width: 300px; /* Adjust width as needed */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .profile-pic {
     width: 40px;
     height: 40px;
@@ -164,13 +156,12 @@ body {
 .dashboard-content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: auto;
     gap: 20px;
     grid-template-areas:
-        "personal-details gpa-card"
-        "personal-details credits-card"
-        "personal-details total-credits-card"
-        "notification-card system-log";
+        "personal-details total-users"
+        "personal-details registered-students"
+        "personal-details active-courses"
+        "notifications system-logs";
 }
 
 .card {
@@ -186,86 +177,22 @@ body {
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
     }
 
-.personal-details {
-    grid-area: personal-details;
-    background-color: #fff;
+/* Card Styles */
+.total-users-card {
+    grid-area: total-users;
     border-left: 5px solid var(--primary-color);
 }
 
-    .personal-details h2 {
-        margin-bottom: 20px;
-        color: var(--primary-color);
-    }
-
-.details-content p {
-    margin-bottom: 15px;
-    font-size: 16px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eee;
-}
-
-    .details-content p span {
-        font-weight: 600;
-    }
-
-.gpa-card {
-    grid-area: gpa-card;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff;
-    color: var(--text-color);
+.registered-students-card {
+    grid-area: registered-students;
     border-left: 5px solid var(--primary-color);
 }
 
-    .gpa-card h2 {
-        color: var(--primary-color);
-    }
-
-.credits-card {
-    grid-area: credits-card;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #fff;
-    color: var(--text-color);
-    border-left: 5px solid var(--primary-color);
+.total-users-card,
+.registered-students-card h2 {
+    color: var(--primary-color);
 }
 
-    .credits-card h2 {
-        margin-bottom: 15px;
-        color: var(--primary-color);
-    }
-
-    .credits-card canvas {
-        max-width: 150px;
-        max-height: 150px;
-        margin-top: 10px;
-    }
-
-
-.notification-card {
-    grid-area: notification-card;
-    background-color: #fff;
-    border-left: 5px solid var(--chart-yellow);
-}
-
-.notification-content {
-    position: relative;
-}
-
-    .notification-content h2 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        color: var(--primary-color);
-    }
-.credit-limit-card {
-    border-left: 5px solid var(--primary-color);
-
-}
-    .credit-limit-card h2 {
-        color: var(--primary-color);
-    }
 .session-list {
     list-style-type: none;
     padding-left: 0;
@@ -281,42 +208,97 @@ body {
         border-bottom: none;
     }
 
-.notification-content i.fas.fa-bell {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    color: #ffd700;
-}
 
-
-.total-credits-card {
-    grid-area: total-credits-card;
-    background-color: #fff;
+.system-logs-card {
+    grid-area: system-logs;
     border-left: 5px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-    .total-credits-card h2 {
-        color: var(--primary-color);
+    .system-logs-card canvas {
+        max-width: 100%;
+        height: 200px;
+    }
+
+.notification-card {
+    grid-area: notifications;
+    border-left: 5px solid var(--chart-yellow);
+}
+
+.notification-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .notification-content i {
+        font-size: 24px;
+        color: var(--chart-yellow);
     }
 
 
+/* Chart Styles */
+.chart-card {
+    grid-area: chart-card;
+    background-color: var(--card-bg-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(157, 157, 157, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    ?width: 100%; /* Adjust width based on grid */
+}
 
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+.chart {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.bar {
+    width: 20%; /* Adjust based on number of bars */
+    position: relative;
+}
+
+    .bar::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+    }
+
+.labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Match chart width */
+    margin: 0 auto;
+}
+
+    .labels span {
+        font-size: 12px;
+    }
 
 /* Responsive Design */
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 768px) {
     .dashboard-content {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         grid-template-areas:
             "personal-details"
-            "gpa-card"
-            "credits-card"
-            "notification-card"
-            "total-credits-card";
+            "total-users"
+            "registered-students"
+            "notifications";
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 375px) {
     .sidebar {
         width: 70px;
     }
@@ -342,4 +324,35 @@ body {
     .user-info {
         margin-top: 10px;
     }
+
+    .dashboard-content {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "personal-details"
+            "total-users"
+            "registered-students"
+            "notifications";
+    }
 }
+
+.personal-details {
+    grid-area: personal-details;
+    background-color: #fff;
+    border-left: 5px solid var(--primary-color);
+}
+
+    .personal-details h2 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+
+.details-content p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+    .details-content p span {
+        font-weight: 600;
+    }

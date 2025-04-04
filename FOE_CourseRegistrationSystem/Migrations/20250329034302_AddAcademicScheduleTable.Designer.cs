@@ -4,6 +4,7 @@ using FOE_CourseRegistrationSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOE_CourseRegistrationSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250329034302_AddAcademicScheduleTable")]
+    partial class AddAcademicScheduleTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,9 +179,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("CourseOfferingID")
-                        .HasColumnType("int");
-
                     b.Property<string>("IsApprovedByAdvisor")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -197,8 +197,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("PendingID");
-
-                    b.HasIndex("CourseOfferingID");
 
                     b.HasIndex("StudentID");
 
@@ -499,11 +497,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
 
             modelBuilder.Entity("FOE_CourseRegistrationSystem.Models.PendingRegistration", b =>
                 {
-                    b.HasOne("CourseOffering", "CourseOffering")
-                        .WithMany()
-                        .HasForeignKey("CourseOfferingID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("FOE_CourseRegistrationSystem.Models.Student", "Student")
                         .WithMany()
                         .HasForeignKey("StudentID")
@@ -515,8 +508,6 @@ namespace FOE_CourseRegistrationSystem.Migrations
                         .HasForeignKey("SessionID", "CourseCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CourseOffering");
 
                     b.Navigation("RegistrationSessionCourse");
 

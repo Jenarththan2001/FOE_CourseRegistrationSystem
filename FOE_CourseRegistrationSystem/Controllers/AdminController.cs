@@ -28,8 +28,9 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// </summary>
         public async Task<IActionResult> CourseOffering()
         {
-            // ✅ Fetch Admin Name from Session
-            ViewBag.AdminName = User.Identity.Name;
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
 
             // ✅ Fetch Departments (Exclude Administration)
             ViewBag.Departments = await _context.Departments
@@ -141,11 +142,11 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateRegistrationSession(
-    [FromForm] string[] academicYears,
-    [FromForm] int semester,
-    [FromForm] int? departmentId,
-    [FromForm] DateTime closingDate,
-    [FromForm] List<string> selectedCourses)
+            [FromForm] string[] academicYears,
+            [FromForm] int semester,
+            [FromForm] int? departmentId,
+            [FromForm] DateTime closingDate,
+            [FromForm] List<string> selectedCourses)
         {
             if (academicYears.Length == 0 || semester == 0 ||
                 closingDate == default || closingDate < DateTime.Today ||
@@ -155,18 +156,10 @@ namespace FOE_CourseRegistrationSystem.Controllers
             }
 
             bool isGeneralProgram = semester <= 3;
-            departmentId = isGeneralProgram ? null : departmentId; // Set department to NULL for General Program
+            departmentId = isGeneralProgram ? null : departmentId;
 
             foreach (var academicYear in academicYears)
             {
-                // 🚀 ✅ Instead of preventing duplicates, allow multiple sessions.
-                // This block is now removed:
-                // var existingSession = await _context.RegistrationSessions
-                //     .FirstOrDefaultAsync(rs =>
-                //         rs.AcademicYear == academicYear &&
-                //         rs.Semester == semester.ToString() &&
-                //         rs.DepartmentID == departmentId);
-
                 var registrationSession = new RegistrationSession
                 {
                     AcademicYear = academicYear,
@@ -181,6 +174,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 _context.RegistrationSessions.Add(registrationSession);
                 await _context.SaveChangesAsync();
 
+                // Create session course links
                 var sessionCourses = selectedCourses.Select(courseCode => new RegistrationSessionCourse
                 {
                     SessionID = registrationSession.SessionID,
@@ -189,10 +183,49 @@ namespace FOE_CourseRegistrationSystem.Controllers
 
                 _context.RegistrationSessionCourses.AddRange(sessionCourses);
                 await _context.SaveChangesAsync();
+
+                // Create CourseOfferings for this academic year & semester
+                foreach (var courseCode in selectedCourses)
+                {
+                    // Prevent duplicates
+                    bool exists = await _context.CourseOfferings.AnyAsync(co =>
+                        co.CourseCode == courseCode &&
+                        co.AcademicID == academicYear &&
+                        co.Semester == semester.ToString());
+
+                    if (!exists)
+                    {
+                        // Get academic schedule (for StartDate & EndDate)
+                        var schedule = await _context.AcademicSchedules.FirstOrDefaultAsync(s =>
+                            s.AcademicYear == academicYear && s.Semester == semester);
+
+                        if (schedule == null)
+                        {
+                            Console.WriteLine($"❌ Schedule not found for AcademicYear {academicYear}, Semester {semester}. Skipping offering creation for {courseCode}");
+                            continue; // Don't create offering without proper schedule
+                        }
+
+                        var offering = new CourseOffering
+                        {
+                            CourseCode = courseCode,
+                            AcademicID = academicYear,
+                            Semester = semester.ToString(),
+                            StartDate = schedule.SemesterStartDate,
+                            EndDate = schedule.SemesterEndDate,
+                            StaffID = null // can assign later
+                        };
+
+                        _context.CourseOfferings.Add(offering);
+                        Console.WriteLine($"✅ Created CourseOffering for {courseCode}, Year: {academicYear}, Semester: {semester}");
+                    }
+                }
+
+                await _context.SaveChangesAsync(); // Save all offerings together
             }
 
-            return Json(new { success = true, message = "Registration session created successfully!" });
+            return Json(new { success = true, message = "Registration session and course offerings created successfully!" });
         }
+
 
 
         [HttpGet]
@@ -246,41 +279,72 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// <summary>
         /// Loads Admin Dashboard
         /// </summary>
-        public IActionResult AdminDashboard()
+        public async Task<IActionResult> AdminDashboard()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+
+            if (admin != null)
+            {
+                ViewBag.AdminName = admin.FullName;
+                ViewBag.AdminPhone = admin.PhoneNo;
+                ViewBag.AdminEmail = admin.Email;
+            }
+            else
+            {
+                ViewBag.AdminName = "Unknown";
+                ViewBag.AdminPhone = "Unknown";
+                ViewBag.AdminEmail = "Unknown";
+            }
+            // ✅ Dynamically count lecturers (Role = 0 OR Role = 2)
+            ViewBag.TotalLecturers = await _context.Staffs
+                .Where(s => s.Role == StaffRole.Advisor || s.Role == StaffRole.Coordinator)
+                .CountAsync();
+            // ✅ Total Students
+            ViewBag.TotalStudents = await _context.Students.CountAsync();
+
+            // ✅ Total Pending Requests
+            ViewBag.TotalPendingRequests = await _context.PendingRegistrations
+                .Where(p => p.Status == "Pending")
+                .CountAsync();
+            ViewBag.TotalOpenSessions = await _context.RegistrationSessions.Where(r => r.IsOpen).CountAsync();
+
             return View("~/Views/Dashboard/Admin/AdminDashboard.cshtml");
         }
+
+
 
         /// <summary>
         /// Loads Registration Details Page
         /// </summary>
-        public IActionResult RegistrationDetails()
+        public async Task<IActionResult> RegistrationDetails()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/RegistrationDetails.cshtml");
         }
 
         /// <summary>
         /// Loads Advisor Details Page
         /// </summary>
-        public IActionResult AdvisorDetails()
+        public async Task<IActionResult> AdvisorDetails()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/AdvisorDetails.cshtml");
         }
 
-        /// <summary>
-        /// Loads Old Registration History Page
-        /// </summary>
-        public async Task<IActionResult> OldRegistrationHistory()
-        {
-
-            return View("~/Views/Dashboard/Admin/OldRegistrationHistory.cshtml");
-        }
 
         /// <summary>
         /// Loads Pending Registrations Page
         /// </summary>
         public async Task<IActionResult> PendingRegistrations()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/PendingRegistrations.cshtml");
         }
 
@@ -289,11 +353,17 @@ namespace FOE_CourseRegistrationSystem.Controllers
         /// </summary>
         public async Task<IActionResult> RegistrationSession()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/RegistrationSession.cshtml");
         }
 
-        public IActionResult AdminNotification()
+        public async Task<IActionResult> AdminNotification()
         {
+            var adminEmail = User.Identity.Name;
+            var admin = await _context.Staffs.FirstOrDefaultAsync(a => a.Email == adminEmail);
+            ViewBag.AdminName = admin?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Admin/AdminNotification.cshtml");
         }
 
@@ -303,12 +373,28 @@ namespace FOE_CourseRegistrationSystem.Controllers
         {
             Console.WriteLine("🔹 Fetching Pending Registrations...");
 
-            var pendingRegistrations = await _context.PendingRegistrations
+            // ✅ Load past attempts into memory first
+            var pastAttempts = await _context.Results
+                .GroupBy(r => new { r.StudentID, r.CourseOffering.CourseCode })
+                .Select(g => new { g.Key.StudentID, g.Key.CourseCode, AttemptCount = g.Count() })
+                .ToListAsync();
+
+            Console.WriteLine($"✅ Loaded past attempts data: {pastAttempts.Count} records");
+
+            var pendingRegistrationsRaw = await _context.PendingRegistrations
                 .Include(pr => pr.Student)
                 .Include(pr => pr.RegistrationSessionCourse)
                     .ThenInclude(rsc => rsc.Course)
                 .Include(pr => pr.RegistrationSessionCourse.RegistrationSession)
-                .Select(pr => new
+                .ToListAsync(); // ✅ Materialize first
+
+            // ✅ Compute attempt outside of expression tree (now pure C#)
+            var pendingRegistrations = pendingRegistrationsRaw.Select(pr =>
+            {
+                var attemptRecord = pastAttempts.FirstOrDefault(pa => pa.StudentID == pr.StudentID && pa.CourseCode == pr.CourseCode);
+                int attempt = attemptRecord != null ? attemptRecord.AttemptCount + 1 : 1;
+
+                return new
                 {
                     PendingID = pr.PendingID,
                     StudentID = pr.Student.StudentID,
@@ -319,116 +405,106 @@ namespace FOE_CourseRegistrationSystem.Controllers
                     ClosingDate = pr.RegistrationSessionCourse.RegistrationSession.EndDate.ToString("yyyy-MM-dd"),
                     Status = pr.Status,
                     RegistrationDate = pr.RegistrationDate.ToString("yyyy-MM-dd"),
-                    Attempt = pr.Attempt,
+                    Attempt = attempt,
                     IsApprovedByAdvisor = pr.IsApprovedByAdvisor
-                })
-                .ToListAsync();
+                };
+            }).ToList();
 
             Console.WriteLine($"✅ API Data Fetched: {pendingRegistrations.Count} pending registrations.");
 
-            // Print each registration for debugging
+            // ✅ Print for debugging
             foreach (var reg in pendingRegistrations)
             {
-                Console.WriteLine($"➡ {reg.PendingID} | {reg.StudentID} | {reg.CourseCode} | {reg.Semester} | Attempt: {reg.Attempt} | Approved: {reg.IsApprovedByAdvisor}");
+                Console.WriteLine($"➡ PendingID: {reg.PendingID} | StudentID: {reg.StudentID} | CourseCode: {reg.CourseCode} | Semester: {reg.Semester} | Attempt (recalculated): {reg.Attempt} | Approved: {reg.IsApprovedByAdvisor}");
             }
 
             return Json(pendingRegistrations);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> UpdatePendingStatus([FromBody] UpdatePendingStatusRequest request)
         {
-            Console.WriteLine($"? Processing PendingID: {request.PendingID}, Status: {request.Status}");
+            Console.WriteLine($"🔄 Processing PendingID: {request.PendingID}, Status: {request.Status}");
 
             var record = await _context.PendingRegistrations
                 .Include(p => p.Student)
                 .Include(p => p.RegistrationSessionCourse)
-                .ThenInclude(rsc => rsc.Course)
+                    .ThenInclude(rsc => rsc.Course)
                 .Include(p => p.RegistrationSessionCourse.RegistrationSession)
                 .FirstOrDefaultAsync(p => p.PendingID == request.PendingID);
 
             if (record == null)
             {
+                Console.WriteLine("❌ Pending registration not found.");
                 return NotFound(new { message = "Pending registration not found." });
             }
 
-            // ✅ Check if the request is for approval
             if (request.Status == "Approved")
             {
-                Console.WriteLine($"? Approving Registration for StudentID: {record.StudentID}, Course: {record.CourseCode}");
+                Console.WriteLine($"✅ Approving Registration for StudentID: {record.StudentID}, Course: {record.CourseCode}");
 
-                // ✅ Check if Course Offering Exists for the Student’s Academic Year
-                var courseOffering = await _context.CourseOfferings
-                    .FirstOrDefaultAsync(co => co.CourseCode == record.CourseCode
-                                               && co.AcademicID == record.RegistrationSessionCourse.RegistrationSession.AcademicYear);
+                // ✅ Recalculate Attempt
+                int pastAttempts = await _context.Results
+                    .Where(r => r.StudentID == record.StudentID && r.CourseOffering.CourseCode == record.CourseCode)
+                    .CountAsync();
+                int currentAttempt = pastAttempts + 1;
+                Console.WriteLine($"🔢 Calculated Attempt = {currentAttempt}");
 
-                // ✅ If the course offering for the academic year doesn't exist, create it
-                if (courseOffering == null)
+                // ✅ Select appropriate course offering
+                CourseOffering courseOffering = null;
+
+                if (currentAttempt == 1)
                 {
-                    Console.WriteLine($"❌ Course Offering Not Found for CourseCode: {record.CourseCode}, AcademicYear: {record.RegistrationSessionCourse.RegistrationSession.AcademicYear}. Creating new offering...");
-
-                    courseOffering = new CourseOffering
-                    {
-                        CourseCode = record.CourseCode,
-                        AcademicID = record.RegistrationSessionCourse.RegistrationSession.AcademicYear, // ✅ New academic year
-                        StartDate = record.RegistrationDate,
-                        EndDate = record.RegistrationSessionCourse.RegistrationSession.EndDate,
-                        Semester = record.RegistrationSessionCourse.RegistrationSession.Semester,
-                        StaffID = null  // ✅ Assign default or NULL staff
-                    };
-
-                    _context.CourseOfferings.Add(courseOffering);
-                    await _context.SaveChangesAsync();
-
-                    Console.WriteLine($"✅ New Course Offering Created for {record.CourseCode}, AcademicYear: {record.RegistrationSessionCourse.RegistrationSession.AcademicYear}");
+                    Console.WriteLine("📌 Attempt = 1 → Selecting offering from SAME Academic Year & Semester as session");
+                    courseOffering = await _context.CourseOfferings
+                        .FirstOrDefaultAsync(co =>
+                            co.CourseCode == record.CourseCode &&
+                            co.AcademicID == record.RegistrationSessionCourse.RegistrationSession.AcademicYear &&
+                            co.Semester == record.RegistrationSessionCourse.RegistrationSession.Semester);
                 }
                 else
                 {
-                    Console.WriteLine($"✅ Course Offering Found: {courseOffering.OfferingID} for AcademicYear: {courseOffering.AcademicID}");
+                    Console.WriteLine("📌 Attempt > 1 → Selecting MOST RECENT (youngest) offering");
+                    courseOffering = await _context.CourseOfferings
+                        .Where(co => co.CourseCode == record.CourseCode)
+                        .OrderByDescending(co => co.AcademicID)
+                        .ThenByDescending(co => co.Semester)
+                        .FirstOrDefaultAsync();
                 }
 
-                // ✅ Fetch the Latest Offering ID for the Course (Regardless of Academic Year)
-                var latestOffering = await _context.CourseOfferings
-                    .Where(co => co.CourseCode == record.CourseCode)
-                    .OrderByDescending(co => co.OfferingID) // ✅ Get the latest created offering
-                    .FirstOrDefaultAsync();
-
-                if (latestOffering != null)
+                if (courseOffering == null)
                 {
-                    Console.WriteLine($"✅ Using Last Created OfferingID: {latestOffering.OfferingID} for StudentID: {record.StudentID}");
-                    courseOffering = latestOffering; // ✅ Assign the latest offering for registration
+                    Console.WriteLine("❌ Course offering not found.");
+                    return BadRequest(new { message = "Course offering not found. Please contact the admin." });
                 }
 
-                // ✅ Use the attempt count directly from PendingRegistrations table
-                int currentAttempt = record.Attempt;
+                Console.WriteLine($"✅ Selected OfferingID: {courseOffering.OfferingID}, AcademicID: {courseOffering.AcademicID}, Semester: {courseOffering.Semester}");
 
-                // ✅ Add to Registration Table
+                // ✅ Create final registration
                 var newRegistration = new Registration
                 {
-                    OfferingID = courseOffering.OfferingID,  // ✅ Always link to the last available offering
+                    OfferingID = courseOffering.OfferingID,
                     StudentID = record.StudentID,
-                    Semester = record.RegistrationSessionCourse.RegistrationSession.Semester,
-                    Attempt = currentAttempt, // ✅ Use Attempt from PendingRegistrations table
+                    Semester = courseOffering.Semester,
+                    Attempt = currentAttempt,
                     RegistrationDate = DateTime.UtcNow,
                     ApprovalDate = DateTime.UtcNow,
                     TimeStamp = DateTime.UtcNow
                 };
 
                 _context.Registrations.Add(newRegistration);
-                Console.WriteLine($"✅ Registration Created for StudentID: {record.StudentID}, Course: {record.CourseCode}, Attempt: {currentAttempt}, OfferingID: {courseOffering.OfferingID}");
+                Console.WriteLine($"✅ Registration Created | StudentID: {record.StudentID} | Course: {record.CourseCode} | Attempt: {currentAttempt} | OfferingID: {courseOffering.OfferingID}");
             }
 
-            // ✅ Update Pending Registration Status
+            // ✅ Update pending status
             record.Status = request.Status;
             record.ApprovalDate = request.Status == "Approved" ? DateTime.UtcNow : (DateTime?)null;
             await _context.SaveChangesAsync();
 
+            Console.WriteLine($"✅ Pending Registration Updated | PendingID: {request.PendingID} | New Status: {request.Status}");
+
             return Ok(new { message = $"Pending registration {request.Status} successfully!" });
         }
-
-
 
 
         // ✅ C# Model for JSON Request Validation
