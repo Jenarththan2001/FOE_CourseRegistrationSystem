@@ -5,6 +5,7 @@ using FOE_CourseRegistrationSystem.Data;
 using FOE_CourseRegistrationSystem.Services;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace FOE_CourseRegistrationSystem.Controllers
 {
@@ -186,6 +187,52 @@ namespace FOE_CourseRegistrationSystem.Controllers
                 .ToListAsync();
 
             return Json(results);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SubmitApprovals([FromBody] JsonElement data)
+        {
+            try
+            {
+                // Extract studentId
+                int studentId = int.Parse(data.GetProperty("studentId").GetString());
+
+                // Extract and iterate over courses
+                var courses = data.GetProperty("courses").EnumerateArray();
+                foreach (var course in courses)
+                {
+                    string courseCode = course.GetProperty("courseCode").GetString();
+                    string status = course.GetProperty("status").GetString();
+
+                    // Find the pending registration
+                    var pending = await _context.PendingRegistrations
+                        .FirstOrDefaultAsync(p => p.StudentID == studentId
+                            && p.CourseCode == courseCode
+                            && p.Status == "Pending");
+
+                    if (pending != null)
+                    {
+                        if (status == "Approved")
+                        {
+                            pending.IsApprovedByAdvisor = "Yes";
+                        }
+                        else if (status == "Rejected")
+                        {
+                            pending.Status = "Rejected";
+                            // Leave IsApprovedByAdvisor = "No"
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                // ✅ Return success flag for JavaScript
+                return Json(new { success = true, message = "Approvals processed successfully!" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Error in SubmitApprovals: " + ex.Message);
+                return Json(new { success = false, message = "Error processing approvals", error = ex.Message });
+            }
         }
 
         [HttpGet]
