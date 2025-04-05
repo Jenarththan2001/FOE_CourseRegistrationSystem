@@ -1,0 +1,196 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adviser Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdviseeStudentResults.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <span>FOE UOJ</span>
+        </div>
+        <ul class="nav-links">
+            <div class="top-links">
+<li>
+    <a href="@Url.Action("CoordinatorDashboard", "Coordinator")">
+        <i class="fas fa-home"></i><span>Dashboard</span>
+    </a>
+</li>
+<li class="active">
+    <a href="@Url.Action("AdviseeStudents", "Coordinator")">
+        <i class="fas fa-users"></i><span>Advisee Course Registration</span>
+    </a>
+</li>
+<li>
+    <a href="@Url.Action("CoordinatingCourses", "Coordinator")">
+        <i class="fas fa-chalkboard-teacher"></i><span>Coordinating Courses</span>
+    </a>
+</li>
+
+    </div>
+    <div class="bottom-links">
+        <li class="bottom-items">
+            <a href="@Url.Action("AdvisorNotification", "Advisor")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+        </li>
+        <li class="bottom-items">
+            <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+        </li>
+    </div>
+    </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1 id="result-header">Advisee Results : @ViewBag.StudentRegNo</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="coordinator-name">@ViewBag.CoordinatorName</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+
+  <!-- Results Content -->
+        <div class="results-content">
+            <div class="filter-section card">
+                <div class="filter-container">
+                    <div class="semester-filter">
+                        <label for="semester-select">Semester</label>
+                        <select id="semester-select">
+                            <option value="all">All Semesters</option>
+                            @for (int i = 1; i <= 8; i++)
+                            {
+                                        <option value="@i">Semester @i</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search courses..." />
+                        <button id="search-button"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table Cards -->
+            <div class="results-table card">
+                <h2>Course Results</h2>
+                <div class="results-cards" id="results-container">
+                    <p class="no-results" style="display: none;">No results found.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const studentId = new URLSearchParams(window.location.search).get("studentId");
+
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function filterResults() {
+            const selectedSemester = document.getElementById('semester-select').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const resultCards = document.querySelectorAll('.result-card');
+
+            let visibleCount = 0;
+            resultCards.forEach(card => {
+                const semesterBadge = card.querySelector('.semester-badge').textContent.toLowerCase();
+                const courseName = card.querySelector('.course-name').textContent.toLowerCase();
+                const courseCode = card.querySelector('.course-header h3').textContent.toLowerCase();
+
+                const matchesSemester = selectedSemester === "all" || semesterBadge.includes(`semester ${selectedSemester}`);
+                const matchesSearch = courseName.includes(searchTerm) || courseCode.includes(searchTerm);
+
+                const shouldShow = matchesSemester && matchesSearch;
+                card.style.display = shouldShow ? "block" : "none";
+
+                if (shouldShow) visibleCount++;
+            });
+
+            document.querySelector(".no-results").style.display = visibleCount === 0 ? "block" : "none";
+        }
+
+        async function fetchStudentResults() {
+            if (!studentId) {
+                alert("Student ID not found.");
+                return;
+            }
+
+
+
+            try {
+                const response = await fetch(`/Coordinator/GetStudentResults?studentId=${studentId}`);
+
+                const results = await response.json();
+
+                const container = document.getElementById("results-container");
+                container.innerHTML = "";
+
+                if (results.length === 0) {
+                    container.innerHTML = "<p class='no-results'>No results found.</p>";
+                    return;
+                }
+
+                results.forEach(result => {
+                    const finalAvg = (result.inCourse + result.endMarks) / 2.0;
+                    const isFail = finalAvg < 50;
+
+                    const card = document.createElement("div");
+                    card.className = `result-card ${isFail ? "fail" : "pass"}`;
+
+                    card.innerHTML = `
+                        <div class="course-header">
+                            <h3>${result.courseCode}</h3>
+                            <span class="semester-badge">Semester ${result.semester}</span>
+                        </div>
+                        <div class="course-details">
+                            <p class="course-name">${result.courseName}</p>
+                            <div class="result-details">
+                                <div class="detail-item"><span class="detail-label">In-course</span><span class="detail-value">${result.inCourse}</span></div>
+                                <div class="detail-item"><span class="detail-label">End</span><span class="detail-value">${result.endMarks}</span></div>
+                                <div class="detail-item"><span class="detail-label">Result</span><span class="detail-value">${result.grade}</span></div>
+                                <div class="detail-item"><span class="detail-label">Status</span><span class="detail-value status-${isFail ? "fail" : "pass"}">${isFail ? "Fail" : "Pass"}</span></div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+                filterResults(); // Apply initial filter
+            } catch (err) {
+                console.error("Error fetching results:", err);
+            }
+        }
+
+        document.getElementById("semester-select").addEventListener("change", filterResults);
+        document.getElementById("search-input").addEventListener("input", filterResults);
+        document.getElementById("search-button").addEventListener("click", filterResults);
+
+        document.addEventListener("DOMContentLoaded", fetchStudentResults);
+    </script>
+</body>
+</html>

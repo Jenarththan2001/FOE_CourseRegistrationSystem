@@ -1,0 +1,196 @@
+﻿@using FOE_CourseRegistrationSystem.Models
+
+@{
+    var student = ViewData["Student"] as Student;
+    double gpa = ViewData["GPA"] != null ? (double)ViewData["GPA"] : 0.0;
+    int totalCreditsEarned = ViewData["TotalCreditsEarned"] != null ? (int)ViewData["TotalCreditsEarned"] : 0;
+    int remainingCredits = ViewData["RemainingCredits"] != null ? (int)ViewData["RemainingCredits"] : 0;
+    int trackedCredits = ViewData["TrackedCredits"] != null ? (int)ViewData["TrackedCredits"] : 0;
+
+    Layout = null;
+}
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                    <li class="active">
+                        <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                    </li>
+                </div>
+
+                <div class="bottom-links">
+                    <li class="bottom-items">
+                        <a href="@Url.Action("StudentNotification", "Student")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+                    </li>
+                    <li class="bottom-items">
+                        <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+                    </li>
+                    <li class="bottom-items">
+                        <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+                    </li>
+                </div>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Student - Dashboard</h1>
+                <div class="user-info">
+                    <div class="profile-pic">
+                        <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                    </div>
+                    <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
+                    <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Personal Details Card -->
+                <div class="card personal-details">
+                    <h2>Personal details</h2>
+                    <div class="details-content">
+                        <p><span>Name :</span> - <span>@student.FullName</span></p>
+                        <p><span>Reg No :</span> - <span>@student.StudentID</span></p>
+                        <p><span>Phone :</span> - <span>@student.PhoneNo</span></p>
+                        <p><span>Email :</span> - <span>@student.Email</span></p>
+                        <p><span>Address :</span> - <span>@student.PermanentAddress</span></p>
+                        <p><span>Advisor :</span> - <span>@student.Advisor?.FullName</span></p>
+                        <p><span>Current Semester :</span> - <span>@ViewData["CurrentSemester"]</span></p>
+                    </div>
+                </div>
+
+                <!-- GPA Card -->
+                <div class="card gpa-card">
+                    <h2>GPA : @gpa.ToString("0.00")</h2>
+                </div>
+
+                <!-- Remaining Credits Card -->
+                <div class="card credits-card">
+                    <h2>Remaining Credits : @remainingCredits / 153</h2>
+                    <canvas id="creditsChart"></canvas>
+                </div>
+
+<!-- Notification Card -->
+               <!-- Notification Card -->
+@if (ViewData["OpenSessions"] is List<FOE_CourseRegistrationSystem.Models.RegistrationSession> sessions && sessions.Any())
+{
+    <div class="card notification-card">
+        <div class="notification-content">
+            <h3>The following registration sessions are open:</h3>
+            <div class="session-list">
+                @foreach (var s in sessions)
+                {
+                    <div class="session-item">
+                        Semester @s.Semester | Closing Date: @s.EndDate.ToString("yyyy-MM-dd")
+                    </div>
+                }
+            </div>
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card notification-card">
+        <div class="notification-content">
+            <p>No registration session is currently open.</p>
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+}
+
+
+
+                <!-- Total Credits Card -->
+                <div class="card total-credits-card">
+                    <h2>Total Credits Earned : @totalCreditsEarned / 153</h2>
+                </div>
+
+<!-- Credit Limit Card -->
+                @{
+                    int currentSem = int.TryParse(ViewData["CurrentSemester"]?.ToString(), out int sem) ? sem : 0;
+                    int nextSem = currentSem + 1;
+                }
+<div class="card credit-limit-card">
+    <h2>Credits Limit for Semester @nextSem : @trackedCredits / 24 </h2>
+</div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('creditsChart').getContext('2d');
+
+            const creditsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Earned', 'Remaining'],
+                    datasets: [{
+                        data: [@totalCreditsEarned, @remainingCredits],
+                        backgroundColor: ['#6c5ce7', '#a29bfe'],
+                        borderWidth: 0,
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

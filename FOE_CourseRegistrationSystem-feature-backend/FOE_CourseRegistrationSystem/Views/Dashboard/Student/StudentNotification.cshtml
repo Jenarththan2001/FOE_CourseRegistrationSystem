@@ -1,0 +1,130 @@
+﻿@{
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="~/css/StudentNotification_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+        </div>
+
+        <div class="bottom-links">
+            <li class="bottom-items active">
+                <a href="@Url.Action("StudentNotification", "Student")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Student Notifications</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Notifications Content -->
+        <div class="notifications-content">
+            <h2>Notifications</h2>
+
+            <div class="select-all-buttons">
+                <button id="selectAll">Select All</button>
+                <button id="clearNotifications">Clear Selected</button>
+            </div>
+
+            <div class="notifications-list">
+                <div class="notification-item">
+                    <input type="checkbox" id="notification1">
+                    <label for="notification1">Opened new courses for registration for the 2025 academic year.</label>
+                    <span class="timestamp">2025-03-28, 10:00 AM</span>
+                </div>
+
+                <div class="notification-item">
+                    <input type="checkbox" id="notification2">
+                    <label for="notification2">Opened new courses for registration for the 2026 academic year.</label>
+                    <span class="timestamp">2025-03-28, 11:00 AM</span>
+                </div>
+
+                <div class="notification-item">
+                    <input type="checkbox" id="notification3">
+                    <label for="notification3">Your course registration is successfull.</label>
+                    <span class="timestamp">2025-03-27, 09:00 AM</span>
+                </div>
+
+                <div class="notification-item">
+                    <input type="checkbox" id="notification3">
+                    <label for="notification3">Your course registration were approved.</label>
+                    <span class="timestamp">2025-03-27, 09:00 AM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            document.getElementById("current-date").textContent = new Date().toLocaleDateString();
+            document.getElementById("current-time").textContent = new Date().toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        document.getElementById('clearNotifications').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.closest('.notification-item').remove();
+                }
+            });
+        });
+
+        document.getElementById('selectAll').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.notification-item input[type=checkbox]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+    </script>
+</body>
+
+</html>
+

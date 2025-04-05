@@ -1,0 +1,130 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="~/css/AdminDashboard_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <div class="top-links">
+                <li class="active">
+                    <a href="@Url.Action("AdminDashboard", "Admin")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("RegistrationDetails", "Admin")"><i class="fas fa-users"></i><span>Registration Details</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseOffering", "Admin")"><i class="fas fa-book"></i><span>Course Offering</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdvisorDetails", "Admin")"><i class="fas fa-chart-line"></i><span>Advisor List</span></a>
+                </li>
+        </div>
+        <div class="bottom-links">
+            <li class="bottom-items">
+                <a href="@Url.Action("AdminNotification", "Admin")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+            </li>
+            <li class="bottom-items">
+                <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+            </li>
+        </div>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div class="user-info">
+                <div class="profile-pic">
+                    <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                </div>
+                <span id="admin-name">@ViewBag.AdminName</span>
+                <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+
+            <div class="card personal-details">
+                <h2>Personal details</h2>
+                <div class="details-content">
+                    <p><span>Name :</span> - <span>@ViewBag.AdminName</span></p>
+                    <p><span>Phone :</span> - <span>@ViewBag.AdminPhone</span></p>
+                    <p><span>Email :</span> - <span>@ViewBag.AdminEmail</span></p>
+                </div>
+            </div>
+
+            <!-- Total Users Card -->
+            <div class="card total-users-card">
+                <h2>Lecturers: @ViewBag.TotalLecturers</h2>
+            </div>
+
+
+            <!-- Registered Students Card -->
+            <div class="card registered-students-card">
+                <h2>Students: @ViewBag.TotalStudents</h2>
+            </div>
+
+
+
+            <!-- Pending request Card -->
+            <div class="card pending-request-card">
+                <h2>Pending request: @ViewBag.TotalPendingRequests</h2>
+            </div>
+
+
+            <!-- Currently Opened Card -->
+            <div class="card currently-opened-card">
+                <h2>Currently opened session: @ViewBag.TotalOpenSessions</h2>
+            </div>
+
+
+            <!-- Notifications Card -->
+            <!-- Notifications Card -->
+            <div class="card notification-card">
+                <div class="notification-content">
+                    <p>@ViewBag.TotalPendingRequests registration requests pending approval</p>
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to set the time immediately
+        updateTime();
+
+
+    </script>
+</body>
+
+</html>

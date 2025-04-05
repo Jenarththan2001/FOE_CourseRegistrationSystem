@@ -21,12 +21,23 @@
         </div>
         <ul class="nav-links">
             <div class="top-links">
-            <li class="active">
-                <a href="@Url.Action("CoordinatorDashboard", "Coordinator")"><i class="fas fa-home"></i><span>Dashboard</span></a>
-            </li>
-            <li>
-                <a href="@Url.Action("CoordinatingCourses", "Coordinator")"><i class="fas fa-book"></i><span>Coordinating Courses</span></a>
-            </li>
+<li class="active">
+    <a href="@Url.Action("CoordinatorDashboard", "Coordinator")">
+        <i class="fas fa-home"></i><span>Dashboard</span>
+    </a>
+</li>
+<li >
+    <a href="@Url.Action("AdviseeStudents", "Coordinator")">
+        <i class="fas fa-users"></i><span>Advisee Course Registration</span>
+    </a>
+</li>
+<li>
+    <a href="@Url.Action("CoordinatingCourses", "Coordinator")">
+        <i class="fas fa-chalkboard-teacher"></i><span>Coordinating Courses</span>
+    </a>
+</li>
+
+
     </div>
     <div class="bottom-links">
         <li class="bottom-items">
@@ -51,7 +62,7 @@
                 <div class="profile-pic">
                     <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
                 </div>
-                <span id="admin-name">| Admin: John Doe</span>
+                <span id="coordinator-name">@ViewBag.CoordinatorName</span>
                 <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
             </div>
         </div>

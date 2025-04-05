@@ -1,0 +1,170 @@
+﻿@{
+    var student = ViewData["Student"] as FOE_CourseRegistrationSystem.Models.Student;
+    var results = ViewData["Results"] as List<FOE_CourseRegistrationSystem.Models.Result>;
+    Layout = null;
+}
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results</title>
+    <link rel="stylesheet" href="~/css/StudentDashboard_style.css">
+    <link rel="stylesheet" href="~/css/StudentResults_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>FOE UOJ</span>
+            </div>
+            <ul class="nav-links">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Student")"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="@Url.Action("CourseRegistration", "Student")"><i class="fas fa-book"></i><span>Course Registration</span></a>
+                </li>
+                <li class="active">
+                    <a href="@Url.Action("ResultPage", "Student")"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                </li>
+
+
+            <div class="bottom-links">
+                <li class="bottom-items">
+                    <a href="@Url.Action("StudentNotification", "Student")"><i class="fas fa-bell"></i><span>Notifications</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="@Url.Action("FAQs", "Student")"><i class="fas fa-question-circle"></i><span>FAQs</span></a>
+                </li>
+                <li class="bottom-items">
+                    <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+                </li>
+            </div>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Student - Results</h1>
+                <div class="user-info">
+                    <div class="profile-pic">
+                       <img id="admin-profile" src="~/images/profile.png" alt="Admin Profile">
+                    </div>
+                    <span id="student-id">| @(student != null ? student.FullName : "Unknown")</span> 
+                    <span id="date-time">| Date: <span id="current-date"></span> | Time: <span id="current-time"></span></span>
+                </div>
+            </div>
+
+            <!-- Results Content -->
+            <div class="results-content">
+                <!-- Filter and Search Section -->
+                <div class="filter-section card">
+                    <div class="filter-container">
+                        <div class="semester-filter">
+                            <label for="semester-select">Semester</label>
+                            <select id="semester-select">
+                                <option value="all">All Semesters</option>
+                                @for (int i = 1; i <= 8; i++)
+                                {
+                                            <option value="@i">Semester @i</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="search-container">
+                            <input type="text" id="search-input" placeholder="Search courses...">
+                            <button id="search-button"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Table Cards -->
+                <div class="results-table card">
+                    <h2>Course Results</h2>
+                    <div class="results-cards" id="results-container">
+                        @if (results != null && results.Any())
+                        {
+                            foreach (var result in results)
+                            {
+                                double finalMarks = (result.InCourse + result.EndMarks) / 2.0; // ✅ Correct Calculation
+
+                                // ✅ Fail if finalMarks < 50
+                                bool isFail = finalMarks < 50;
+
+                                                <div class="result-card @(isFail ? "fail" : "pass")">
+                                                    <div class="course-header">
+                                                        <h3>@result.CourseOffering.Course.CourseCode</h3>
+                                                        <span class="semester-badge">Semester @result.CourseOffering.Semester</span>
+                                                    </div>
+                                                    <div class="course-details">
+                                                        <p class="course-name">@result.CourseOffering.Course.CourseName</p>
+                                                        <div class="result-details">
+
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Result</span>
+                                                                <span class="detail-value">@result.Grade</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Status</span>
+                                                                <span class="detail-value status-@(isFail ? "fail" : "pass")">
+                                                    @(isFail ? "Fail" : "Pass")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                            }
+                        }
+                        else
+                        {
+                                    <p class="no-results">No results found.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const currentDate = new Date();
+            document.getElementById("current-date").textContent = currentDate.toLocaleDateString();
+            document.getElementById("current-time").textContent = currentDate.toLocaleTimeString();
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function filterResults() {
+            const selectedSemester = document.getElementById('semester-select').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const resultCards = document.querySelectorAll('.result-card');
+
+            resultCards.forEach(card => {
+                const semesterBadge = card.querySelector('.semester-badge').textContent.toLowerCase();
+                const courseName = card.querySelector('.course-name').textContent.toLowerCase();
+                const courseCode = card.querySelector('.course-header h3').textContent.toLowerCase();
+
+                const matchesSemester = selectedSemester === "all" || semesterBadge.includes(`semester ${selectedSemester}`);
+                const matchesSearch = courseName.includes(searchTerm) || courseCode.includes(searchTerm);
+
+                card.style.display = (matchesSemester && matchesSearch) ? "block" : "none";
+            });
+        }
+
+        document.getElementById('semester-select').addEventListener('change', filterResults);
+        document.getElementById('search-input').addEventListener('input', filterResults);
+        document.getElementById('search-button').addEventListener('click', filterResults);
+    </script>
+</body>
+</html>

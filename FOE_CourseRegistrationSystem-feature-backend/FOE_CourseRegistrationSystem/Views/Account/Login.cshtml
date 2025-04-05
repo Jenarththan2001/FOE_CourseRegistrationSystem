@@ -1,0 +1,76 @@
+﻿@model FOE_CourseRegistrationSystem.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Course Registration System</title>
+    <link rel="stylesheet" href="~/css/CustomLogin.css" />
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="content">
+                <h1>Welcome to Faculty course Registration System</h1>
+                <p>Faculty of Engineering, University of Jaffna.</p>
+                <p>Join us to experience the best Course registration system!</p>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="login-form">
+                <h2>Login</h2>
+                <div class="avatar-container">
+                    <img src="@Url.Content("~/images/profile.png")" alt="Avatar" class="avatar" />
+                </div>
+
+                <!-- Login Form -->
+                <form asp-action="Login" asp-controller="Account" method="post">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input asp-for="Email" type="email" placeholder="Enter your email" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input asp-for="Password" type="password" placeholder="Enter your password" required />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+
+                    <!-- Login Button -->
+                    <button type="submit" class="login-btn">Login</button>
+
+                    @if (!ViewData.ModelState.IsValid || !string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
+                    {
+                            <div class="error-message">
+                            @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
+                            {
+                                @ViewData["ErrorMessage"]
+                            }
+                            else
+                            {
+                                        <span>Invalid login attempt. Please check your credentials.</span>
+                            }
+                            </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>
