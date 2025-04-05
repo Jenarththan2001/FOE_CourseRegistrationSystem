@@ -145,6 +145,8 @@ namespace FOE_CourseRegistrationSystem.Controllers
             ViewBag.AdvisorName = coordinator.FullName;
             ViewBag.Students = list;
 
+            ViewBag.CoordinatorName = coordinator?.FullName ?? "Unknown";
+
             return View("~/Views/Dashboard/Coordinator/AdviseeStudents.cshtml");
         }
         public async Task<IActionResult> AdviseeStudentsResult(int studentId)
@@ -160,6 +162,7 @@ namespace FOE_CourseRegistrationSystem.Controllers
             ViewBag.Role = "Coordinator";  // ✅ Add this line
 
 
+            ViewBag.CoordinatorName = coordinator?.FullName ?? "Unknown";
             return View("~/Views/Dashboard/Coordinator/AdviseeStudentsResult.cshtml");
         }
 

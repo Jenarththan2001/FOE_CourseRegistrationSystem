@@ -40,9 +40,6 @@
     </div>
     <div class="bottom-links">
         <li class="bottom-items">
-            <a href="@Url.Action("CoordinatorNotification", "Coordinator")"><i class="fas fa-bell"></i><span>Notifications</span></a>
-        </li>
-        <li class="bottom-items">
             <a href="~/Account/Login"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
         </li>
     </div>
@@ -68,9 +65,9 @@
     <div class="main-content">
 
         <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search by RegNo">
-        </div>
+        @* <div class="search-container"> *@
+        @*     <input type="text" id="search-input" placeholder="Search by RegNo"> *@
+        @* </div> *@
 
         <!-- Students Table -->
         <div class="table-container">
@@ -265,7 +262,7 @@
 
                 document.addEventListener("DOMContentLoaded", function() {
                     // Get references to the search input and table body
-                    const searchInput = document.getElementById("search-input");
+                    // const searchInput = document.getElementById("search-input");
                     const tableBody = document.getElementById("student-table-body");
                     const modal = document.getElementById("registrationModal");
                     const closeBtn = document.querySelector(".close");
@@ -294,9 +291,9 @@
                     }
 
                     // Event listener for the search input
-                    searchInput.addEventListener("input", function() {
-                        filterTableRows(searchInput.value);
-                    });
+                    // searchInput.addEventListener("input", function() {
+                    //     filterTableRows(searchInput.value);
+                    // });
 
                     // Function to open the modal and populate student details
         function openRegistrationModal(regno, name, year, semester) {
